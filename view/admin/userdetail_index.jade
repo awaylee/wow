@@ -1,0 +1,666 @@
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+extends ./common/sidebar
+block main
+    .fx_right_content
+        .userdital_head.clearfix
+            .head_lt
+                .head_img
+                    img(src = user.avatar)
+            .head_md
+                p
+                    span.user_id(user_id = user.user_id)="ID："+user.user_id
+                    span="电话号码："+user.phone
+                p
+                    span="昵称："+user.name
+                    span="等级："+user.level
+                p
+                    span="姓名："+user.realname
+                    span="积分："+user.point
+            .head_rt
+                if (user.status == 1)
+                    button.sethonor(flag = '1')="封号"
+                if (user.status == 0)
+                    button.active.sethonor(flag = '0')="解除封号"
+        .tab_nav
+            ul.nav.nav-tabs.nav-justified
+                li.pbwork.active(role="presentation")
+                    a(href="javascript:;")="发布作品"
+                        span="（" + worknum.num +"）"
+                li.pbarticle(role="presentation")
+                    a(href="javascript:;")="发布文章"
+                        span="（" + articlenum.num +"）"
+                li.pbmood(role="presentation")
+                    a(href="javascript:;")="发布心情"
+                        span="（" + moodnum.num +"）"
+                li.salework(role="presentation")
+                    a(href="javascript:;")="销售作品（0）"
+                li.buywork(role="presentation")
+                    a(href="javascript:;")="购买作品（0）"
+        .tabs
+            .tab.tab1
+                .work_table
+                    table.table1
+
+            .tab.tab2.display_none
+                .work_table
+                    table.table2
+
+            .tab.tab3.display_none
+                .table_con.clearfix
+                    each mood in moodlist
+                        .left_con(feeling_id = mood.feeling_id)
+                            .mood_con.clearfix
+                                .mood_head
+                                    img(src = mood.avatar)
+                                .mood_txt
+                                    p
+                                        span.margin-4r=mood.name
+                                        - var date = new Date(mood.publish_time*1000);
+                                        - var y = date.getFullYear();
+                                        - var m = date.getMonth()+1;
+                                        - m = m < 10 ? ('0' + m) : m
+                                        - var d = date.getDate();
+                                        - d = d < 10 ? ('0' + d) : d;
+                                        - var h = date.getHours();
+                                        - var minute = date.getMinutes();
+                                        - minute = minute < 10 ? ('0' + minute) : minute;
+                                        - var time = y+ "-" + m+"-"+d+" "+h+":"+minute;
+                                            span=time
+                                    p.mood_text=mood.text
+                                .mood_btn.fr.delete_mood
+                                    button="删除心情"
+                            .mood_pics.clearfix
+                                each picture in mood.pictures
+                                    .mood_pic
+                                        img(src = picture)
+                            .list_item
+                                span.margin-4r="分享数：" +mood.shares_num
+                            .list_item.clearfix
+                                span.fl.margin-4r="点赞数：" +mood.likes_num
+                                each like in mood.likes_dtl
+                                    .img_list(like_author_id = '#{like.author_id}')
+                                        img(src = like.author_avatar)
+
+                            .list_item
+                                span="评论数："
+                                span.comNum=mood.comments_num
+                            if (mood.comments_num > 0)
+                              each comments in mood.comments_dtl
+                                  if(comments.is_reply == 0)
+                                    .comment_box.clearfix( comment_id = '#{comments.comment_id}')
+                                        .comment_head.fl( author_id = '#{comments.author_id}')
+                                            img(src=comments.author_avatar)
+                                        .comment_con.fl
+                                            p
+                                                span.blueColor.margin-4r=comments.author_name
+                                                span=comments.publish_time
+                                            p=comments.text
+                                        .delete_btn.fr.delete_comment
+                                            button="删除评论"
+                                  if(comments.is_reply == 1)
+                                    .comment_box.clearfix(comment_id = '#{comments.comment_id}')
+                                        .comment_head.fl( author_id = '#{comments.author_id}')
+                                            img(src=comments.author_avatar)
+                                        .comment_con.fl
+                                            p
+                                                span.blueColor=comments.author_name
+                                                span=" 回复："
+                                                span.margin-4r.blueColor(target_aid = comments.target_aid)=comments.target_aname
+                                                span=comments.publish_time
+                                            p=comments.text
+                                        .delete_btn.fr.delete_comment
+                                            button="删除评论"
+
+            .tab.tab4.display_none
+                .work_table
+                    table.table3
+                        thead
+                            tr
+                                td="作品ID"
+                                td="作品名"
+                                td="作品价格"
+                                td="作品状态"
+                                td="售出日期"
+                                td="购买用户ID"
+                                td="购买用户"
+                                td="操作"
+                        tbody
+                            //tr
+                                td="23123"
+                                td="咿呀咿呀哟"
+                                td="55555"
+                                td="已售出"
+                                td="2016-8-9"
+                                td="44355"
+                                td="marry"
+                                td
+                                    a(href="#{root_path}/admin/work?work_id=111")="查看详情"
+
+            .tab.tab5.display_none
+                .work_table
+                    table.table4
+                        thead
+                            tr
+                                td="作品ID"
+                                td="作品名"
+                                td="作品价格"
+                                td="作品状态"
+                                td="购买日期"
+                                td="购买用户ID"
+                                td="购买用户"
+                                td="操作"
+                        tbody
+                            //tr
+                                td="23123"
+                                td="啦啦啦啦啊"
+                                td="55555"
+                                td="已售出"
+                                td="2016-8-9"
+                                td="41551"
+                                td="Safari"
+                                td
+                                    a(href="#{root_path}/admin/work?work_id=1111")="查看详情"
+
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            $('.tab_nav li').on('click',function () {
+                var index = $(this).index();
+                $(this).addClass('active').siblings('li').removeClass('active');
+                $('.tabs').children('.tab').eq(index).show().siblings('.tab').hide();
+            });
+
+            //封号
+            $('.sethonor').on('click',function () {
+                var flag = $(this).attr('flag');
+                var user_id = $('.user_id').attr('user_id');
+                if (flag == 1){
+                    $.ajax({
+                        url: '#{root_path}/admin/userdetail/disable',
+                        type: 'POST',
+                        data: {user_id:user_id},
+                        success: function (res) {
+                            if (res.errno == "0"){
+                                console.log('封号成功');
+                            } else {
+                                console.log("封号失败："+res);
+                            }
+                        },
+                        error: function () {
+                            console.log('封号失败');
+                        }
+                    });
+                    $(this).addClass('active').text('解除封号').attr('flag','0');
+                }
+                if (flag == 0){
+                    $.ajax({
+                        url: '#{root_path}/admin/userdetail/enable',
+                        type: 'POST',
+                        data: {user_id: user_id},
+                        success: function (res) {
+                            if (res.errno == "0") {
+                                console.log('解除封号');
+                            } else {
+                                console.log("解除封号失败：" + res);
+                            }
+                        },
+                        error: function () {
+                            console.log('解除封号失败');
+                        }
+                    });
+                    $(this).removeClass('active').text('封号').attr('flag','1');
+                }
+                console.log(flag);
+            });
+
+
+            //获取发布文章列表
+            //$('.pbarticle').on('click',function () {
+            //    var user_id = $('.user_id').attr('user_id');
+            //    $.ajax({
+            //        url:'#{root_path}/admin/userdetail/article',
+            //        type: 'POST',
+            //        data:{user_id:user_id},
+            //        success:function (res) {
+            //            console.log(res);
+            //        },
+            //        error:function () {
+            //            console.log('获取用户发布文章列表失败');
+            //        }
+            //    });
+            //});
+
+            /*$('.pbmood').on('click',function () {
+               $.ajax({
+                   url:'./userdetail/mood',
+                   type:'POST',
+                   success:function (res) {
+                       console.log(res);
+                   },
+                   error:function () {
+                       console.log('获取用户发布心情失败');
+                   }
+               })
+            });*/
+
+
+
+            //删除心情
+            $('.delete_mood').on('click',function () {
+                var _this = this;
+                var feeling_id = $(this).parents('.left_con').attr('feeling_id');
+                $.ajax({
+                    url:'./userdetail/delmood',
+                    type:'POST',
+                    data:{feeling_id:feeling_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0"){
+                            $(_this).parents('.left_con').remove();
+                        } else {
+                            console.log('删除心情失败：'+res);
+                        }
+                    },
+                    error: function () {
+                        console.log('删除心情失败');
+                    }
+                });
+
+            });
+
+            //删除心情评论
+            $('.delete_comment').on('click',function () {
+                var _this = this;
+                var comment_id = $(this).parent('.comment_box').attr('comment_id');
+                var comNumber = $(this).parents('.left_con').find('.comNum').text();
+                $.ajax({
+                    url: './userdetail/delcomment',
+                    type: 'POST',
+                    data: {comment_id: comment_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $(_this).parents('.left_con').find('.comNum').text(comNumber - 1);
+                            $(_this).parent('.comment_box').remove();
+                        } else {
+                            console.log('删除心情评论失败：' + res);
+                        }
+                    },
+                    error: function () {
+                        console.log('删除心情评论失败');
+                    }
+                });
+            });
+
+            //table1发布作品
+            var data = !{JSON.stringify(worklists)};
+            $(".table1").bootstrapTable({
+                toolbar: ".toolbar",
+                //toolbarAlign: "right",
+                columns: [
+                    {
+                        title: "作品ID",
+                        field: "work_id",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "作品名",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "作品价格",
+                        field: "works",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            if(value != undefined){
+                                return '￥：'+ value;
+                            }
+                        }
+                    },
+                    {
+                        title: "作品状态",
+                        field: "is_sale",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            if (value == 0){
+                                return '可售';
+                            }
+                            if (value == 1){
+                                return '不可售';
+                            }
+                            if (value == 2){
+                                return '已售出';
+                            }
+                        }
+                    }, {
+                        title: "售出日期",
+                        field: "sale_time",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买用户ID",
+                        field: "buy_uid",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买用户	",
+                        field: "buy_uname",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "操作",
+                        field: "work_id",
+                        align: "center",
+                        valign: "middle",
+                        width: 80,
+                        formatter: function (value, row, index) {
+                            return "<a class='btn btn-xs btn-default' href='#{root_path}/admin/work?work_id=" + value + "'><span class='glyphicon glyphicon-list-alt'></span> 详情</a>";
+                        }
+                    }
+                ],
+                data: data,
+                striped: true,
+                cache: false,
+                sortable: true,
+                sortName: 'user_id',
+                sortOrder: 'asc',
+                //sidePagination: "server",
+                pagination: true,
+                smartDisplay: false,
+                paginationLoop: false,
+                pageList: '[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 10,
+                pageNumber: 1,
+                queryParams: function (params) {
+                    return {
+                        pageSize: params.limit,
+                        offset: params.offset,
+                        sortOrder: params.order
+                    };
+                },
+                //url: '#{rootPath}/admin/operation/user'
+            });
+
+            //table2发布文章
+            var articles = !{JSON.stringify(articles)};
+            $(".table2").bootstrapTable({
+                toolbar: ".toolbar",
+                //toolbarAlign: "right",
+                columns: [
+                    {
+                        title: "全选",
+                        field: "select",
+                        checkbox: true,
+                        width: 20,//宽度
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "文章ID",
+                        field: "article_id",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "文章名",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "操作",
+                        field: "article_id",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            return "<a class='btn btn-xs btn-default' href='#{root_path}/admin/article?article_id=" + value + "'><span class='glyphicon glyphicon-list-alt'></span> 详情</a>";
+                        }
+                    }
+                ],
+                data: articles,
+                striped: true,
+                cache: false,
+                sortable: true,
+                sortName: 'user_id',
+                sortOrder: 'asc',
+                //sidePagination: "server",
+                pagination: true,
+                smartDisplay: false,
+                paginationLoop: false,
+                pageList: '[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 10,
+                pageNumber: 1,
+                queryParams: function (params) {
+                    return {
+                        pageSize: params.limit,
+                        offset: params.offset,
+                        sortOrder: params.order,
+                    };
+                },
+                //url: ' #{rootPath}/admin/operation/user'
+            });
+
+            //table3销售作品
+            //var data = !{JSON.stringify(worklists)};
+            $(".table3").bootstrapTable({
+                toolbar: ".toolbar",
+                //toolbarAlign: "right",
+                columns: [
+                    {
+                        title: "全选",
+                        field: "select",
+                        checkbox: true,
+                        width: 20,//宽度
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "作品ID",
+                        field: "work_id",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "作品名",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "作品价格",
+                        field: "works",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            if (value != undefined) {
+                                return '￥：' + value;
+                            }
+                        }
+                    },
+                    {
+                        title: "作品状态",
+                        field: "is_sale",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            if (value == 0) {
+                                return '可售';
+                            }
+                            if (value == 1) {
+                                return '不可售';
+                            }
+                            if (value == 2) {
+                                return '已售出';
+                            }
+                        }
+                    }, {
+                        title: "售出日期",
+                        field: "sale_time",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买用户ID",
+                        field: "buy_uid",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买用户	",
+                        field: "buy_uname",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "操作",
+                        field: "work_id",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            return "<a href='#{root_path}/admin/work?work_id=" + value + "'>详情</a>";
+                        }
+                    }
+                ],
+                data: '',
+                striped: true,
+                cache: false,
+                sortable: true,
+                sortName: 'user_id',
+                sortOrder: 'asc',
+                //sidePagination: "server",
+                pagination: true,
+                smartDisplay: false,
+                paginationLoop: false,
+                pageList: '[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 10,
+                pageNumber: 1,
+                queryParams: function (params) {
+                    return {
+                        pageSize: params.limit,
+                        offset: params.offset,
+                        sortOrder: params.order,
+                    };
+                },
+                //url: '#{rootPath}/admin/operation/user'
+            });
+
+            //table4销售作品
+            //var data = !{JSON.stringify(worklists)};
+            $(".table4").bootstrapTable({
+                toolbar: ".toolbar",
+                //toolbarAlign: "right",
+                columns: [
+                    {
+                        title: "全选",
+                        field: "select",
+                        checkbox: true,
+                        width: 20,//宽度
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "作品ID",
+                        field: "work_id",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "作品名",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "作品价格",
+                        field: "works",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            if (value != undefined) {
+                                return '￥：' + value;
+                            }
+                        }
+                    },
+                    {
+                        title: "作品状态",
+                        field: "is_sale",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            if (value == 0) {
+                                return '可售';
+                            }
+                            if (value == 1) {
+                                return '不可售';
+                            }
+                            if (value == 2) {
+                                return '已售出';
+                            }
+                        }
+                    }, {
+                        title: "售出日期",
+                        field: "sale_time",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买用户ID",
+                        field: "buy_uid",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买用户	",
+                        field: "buy_uname",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "操作",
+                        field: "work_id",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            return "<a href='#{root_path}/admin/work?work_id=" + value + "'>详情</a>";
+                        }
+                    }
+                ],
+                data: '',
+                striped: true,
+                cache: false,
+                sortable: true,
+                sortName: 'user_id',
+                sortOrder: 'asc',
+                //sidePagination: "server",
+                pagination: true,
+                smartDisplay: false,
+                paginationLoop: false,
+                pageList: '[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 10,
+                pageNumber: 1,
+                queryParams: function (params) {
+                    return {
+                        pageSize: params.limit,
+                        offset: params.offset,
+                        sortOrder: params.order,
+                    };
+                },
+                //url: '#{rootPath}/admin/operation/user'
+            });
+
+
+        });
+
+
+
+

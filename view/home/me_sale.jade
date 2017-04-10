@@ -1,0 +1,277 @@
+//
+   Created by liwei on 2016/12/30.
+
+extends layout
+
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+block content
+    header.bar.bar-nav
+        h1.title="在线销售申请"
+    nav.bar.bar-tab.sale_apply.external_1
+        .tab-item.external
+            span.tab-label="下一步 "
+            span="(0/2)"
+    nav.bar.bar-tab.sale_apply.display_none.external_2
+        .tab-item.external
+            span.tab-label="提交申请 "
+            span="(1/2)"
+    nav.bar.bar-tab.sale_apply.display_none.external_3.external_active
+        .tab-item.external
+            span.tab-label="提交申请 "
+            span="(2/2)"
+    .content
+        .step1
+            .clause_title.text-center="在线销售条款服务"
+            .clause_content
+                | 服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款服务条款
+            .clause_agreen
+                input#agreen(type="checkbox")
+                label(for="agreen")="我同意"
+
+        .step2.display_none
+            .list-block
+                ul
+                    li
+                        .item-content
+                            .item-inner
+                                .item-input
+                                    input.real_name(type="text", placeholder="请输入真实姓名")
+                            i.iconfont.icon-wancheng.clause_icon
+                    li
+                        .item-content
+                            .item-inner
+                                .item-input
+                                    input.tel(type="tel" placeholder="请输入手机号码")
+                            i.iconfont.icon-wancheng.clause_icon
+                    li
+                        .item-content
+                            .item-inner
+                                .item-input
+                                    input.code(type="text", placeholder="请输入验证码")
+                                i.iconfont.icon-wancheng.clause_icon
+                            input.item-media.clause_code#btnSendCode.text-center(value="获取验证码")
+
+                    li
+                        .item-content
+                            .item-inner
+                                .item-input
+                                    input.id_number(type="text", placeholder="请输入证件号码")
+                            i.iconfont.icon-wancheng.clause_icon
+                    li
+                        .item-content
+                            .item-inner
+                                .item-input
+                                    input(type="text", placeholder="上传您的照片", disabled="true")
+                            i.iconfont.icon-wancheng.clause_icon.clause_icon1
+                        .item-content.row
+                            .clause_add.col-33
+                                i.iconfont.icon-zhaoxiangji
+                                form#uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100px; z-index:99;")
+                                    input#filechooser(type="file" name="mood_img" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+                        .item_content_img.item-content
+                            //.clause_img
+                                span.clause_cancel
+                                    | &times;
+                                img
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            //同意服务条款
+            $("#agreen").on("click",function () {
+                if($("#agreen").prop("checked") ==true){
+                    $(".external_1").addClass('external_active');
+                } else {
+                    $(".external_1").removeClass('external_active');
+                }
+            });
+            //下一步
+            $(".external_1").on('click',function () {
+                var flag = $("#agreen").prop("checked");
+                if(flag){
+                    $(this).hide().next().show();
+                    $(".step1").hide().next('.step2').show();
+                }
+            });
+
+            //step2
+            $('.item-input>input').on("blur",function () {
+                var value = $(this).val();
+                if(value != ""){
+                    $(this).parents('.item-content').find('.clause_icon').addClass('active');
+                } else {
+                    $(this).parents('.item-content').find('.clause_icon').removeClass('active');
+                }
+            });
+
+            $("#filechooser").on('change', function () {
+                var file = this.files[0];
+                // 接受 jpeg, jpg, png 类型的图片
+                if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+                if (Math.ceil(file.size / 1024 / 1024) > 5) {
+                    console.error('文件太大');
+                    return;
+                }
+                doUpload();//上传图片
+            });
+
+            function doUpload() {
+                var formData = new FormData($("#uploadimg")[0]);
+                $.ajax({
+                    url: "./upload",
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log($(this).parents('li'));
+                        console.log(res);
+                        //返回图片url
+                        if (res.errno !== 0) {
+                            console.log('上传文件出错');
+                            return
+                        }
+                        var html = "<div class='clause_img'>\
+                                        <img src=" + res.data + ">\
+                                        <span class='issue_cancel icon iconfont icon-reduce'></span>\
+                                    </div>";
+                        var item = $(html);
+                        item.find("span").click(deleteImg);
+                        $(".item_content_img").append(item);
+                        $('.clause_icon1').addClass('active');
+                        $('.external_2').hide().next('.external_3').show();
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            function deleteImg() {
+                $(this).parent().remove();
+                var src = $(this).prev('img').attr('src');
+                console.log(src);
+                $.ajax({
+                    url: './remove',
+                    type: 'POST',
+                    data: {src: src},
+                    success: function (res) {
+                        console.log(res)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            //手机号码验证
+            $('.tel').on('blur',function () {
+                var sMobile = $(this).val();
+                if (!(/^1[3|4|5|8][0-9]\d{4,8}$/.test(sMobile))) {
+                    $.alert("请输入11位正确的手机号码");
+                }
+            });
+            //获取短信验证码
+            /*$(".clause_code").on("click",function () {
+                var tel = $(".tel").val();
+                console.log(tel);
+               $.ajax({
+                   url:"./code",
+                   type:"POST",
+                   data:{tel:tel},
+                   success:function (res) {
+                       console.log(res)
+                   },
+                   error:function (res) {
+                       console.log(res)
+                   }
+               })
+            });*/
+
+            var InterValObj; //timer变量，控制时间
+            var count = 120; //间隔函数，1秒执行
+            var curCount;//当前剩余秒数
+
+            $(".clause_code").on("click", function () {
+                var tel = $(".tel").val();
+                curCount = count;
+                //设置button效果，开始计时
+                $("#btnSendCode").attr("disabled",true).addClass("active");//启用按钮
+                $("#btnSendCode").val( curCount + "秒");
+                InterValObj = window.setInterval(SetRemainTime, 1000); //启动计时器，1秒执行一次
+                //向后台发送处理数据
+                $.ajax({
+                    url: "./code",
+                    type: "POST",
+                    data: {tel: tel},
+                    success: function (res) {
+                        console.log(res)
+                    },
+                    error: function (res) {
+                        console.log(res)
+                    }
+                })
+            });
+
+            //timer处理函数
+            function SetRemainTime() {
+                if (curCount == 0) {
+                    window.clearInterval(InterValObj);//停止计时器
+                    $("#btnSendCode").removeAttr("disabled").removeClass("active");//启用按钮
+                    $("#btnSendCode").val("重新发送");
+                }
+                else {
+                    curCount--;
+
+                    $("#btnSendCode").val(curCount + "秒");
+                }
+            }
+
+            //身份证验证
+            $('.id_number').on('blur',function () {
+                var num  = $(this).val().toUpperCase();
+                if (!(/(^\d{15}$)|(^\d{17}([0-9]|X)$)/.test(num))) {
+                    $.alert("请输入正确的身份证号码");
+                }
+            });
+
+            //提交申请(2/2)
+            $('.external_3').on('click',function () {
+                var real_name = $('.real_name').val();
+                var tel = $('.tel').val();
+                var code = $('.code').val();
+                var id_number = $('.id_number').val();
+                console.log(real_name, tel, code, id_number);
+                $.ajax({
+                    url:'./apply',
+                    type:'POST',
+                    data:{
+                        real_name:real_name, tel:tel, code:code, id_number:id_number
+                    },
+                    success:function (res) {
+                        if(res.errno == 0){
+                            $.alert('申请提交成功',function () {
+                                window.location.href='#{root_path}/home/me';
+                            });
+                        } else {
+                            $.alert(res.errmsg);
+                            console.log('失败原因：',res)
+                        }
+
+                        console.log(res);
+                    },
+                    error:function (res) {
+                        console.log('申请失败：'+res)
+                    }
+                });
+
+
+            });
+
+
+        });
+

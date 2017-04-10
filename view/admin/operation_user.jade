@@ -1,0 +1,105 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+
+block main
+    .table_box: table
+
+block footer
+    script(type="text/javascript").
+        var data = !{JSON.stringify(users)};
+        //用户管理-获取用户列表
+        $(function () {
+            $("table").bootstrapTable({
+                toolbar: ".toolbar",
+                //toolbarAlign: "right",
+                columns: [
+                    {
+                        title: "用户ID",
+                        field: "user_id",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "用户昵称",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "发布作品",
+                        field: "p_works",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "发布文章",
+                        field: "p_articles",
+                        align: "center",
+                        valign: "middle",
+                    },  {
+                        title: "发布心情",
+                        field: "p_feelings",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "销售作品	",
+                        field: "s_works",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "购买作品	",
+                        field: "b_works",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "操作",
+                        field: "user_id",
+                        align: "center",
+                        valign: "middle",
+                        width: 80,
+                        formatter: function (value, row, index) {
+                            return "<a class='btn btn-xs btn-default' href='#{root_path}/admin/userdetail?user_id="+ value + "'><span class='glyphicon glyphicon-list-alt'></span> 详情</a>";
+                        }
+                    }
+                ],
+                //data: data,
+                striped: true,
+                cache: false,
+                search: false,
+                sortable: true,
+                sortName: 'user_id',
+                sortOrder: 'asc',
+                sidePagination: "server",
+                showRefresh: false,
+                showToggle: true,
+                showColumns: true,
+                pagination: true,
+                smartDisplay: true,
+                paginationLoop:false,
+                pageList:'[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 20,
+                pageNumber:1,
+                totalField: "total",
+                dataField: "rows",
+                pageIndex: "page-index",
+                onLoadSuccess: function(data){
+                    //console.log(data);
+                    return data.data;
+                },
+                queryParams: function (params) {
+                    //console.log(params);
+                    return params;
+                },
+                method: 'post',
+                contentType: "application/x-www-form-urlencoded",
+                url: './userdata'
+            });
+
+
+        });

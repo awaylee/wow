@@ -1,0 +1,138 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", type="text/css", href="#{root_path}/static/css/lib/swiper.min.css")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/swiper.min.js")
+block main
+    .fx_right_content
+        .back
+            a(href="javascript:history.back(-1);")="返回"
+        .work
+            .work_con.clearfix(work_id = workdetail.work_id)
+                .swiper-container.work_img.fl
+                    .swiper-wrapper
+                        each picture in workdetail.pictures
+                            .swiper-slide
+                                img(src = picture)
+                    .swiper-pagination
+                .work_type.fl
+                    p="作品ID：" + workdetail.work_id
+                    p="作品名称：" +workdetail.name
+                    p
+                      if (workdetail.price)
+                        span="作品价格："+workdetail.price
+                      else
+                        span="作品价格：-"
+                    p="作品规格：" + workdetail.size
+                    p="创作日期："+ workdetail.create_time
+                    p="售出日期：" + workdetail.sale_time
+                    p="购买用户ID：" + workdetail.buy_uid
+                    p="购买用户昵称：" + workdetail.buy_uname
+                    p="支付方式：" + workdetail.buy_way
+                .delete_btn.fr.delete_work
+                    button="删除作品"
+            .list_item
+                span.margin-4r="分享数：" + workdetail.shares_num
+            .list_item.clearfix
+                span.margin-4r.fl="点赞数："+workdetail.likes_num
+                each like in workdetail.likes_dtl
+                    .img_list(author_id = like.author_id)
+                        img(src = like.author_avatar)
+
+            .list_item
+                span="评论数："
+                  span.comNumber=workdetail.comments_num
+        each comments in workdetail.comments_dtl
+            .comment_list
+                .comment_box.clearfix( comment_id = '#{comments.comment_id}')
+                    div.clearfix
+                        .comment_head.fl( author_id = '#{comments.author_id}')
+                            img(src=comments.author_avatar)
+                        .comment_con.fl
+                            p
+                                span.blueColor.margin-4r=comments.author_name
+                                span=comments.publish_time
+                            p=comments.text
+                        .delete_btn.fr.delete_comment
+                            button="删除评论"
+                    each reply in comments.replys
+                        .replys.clearfix
+                            .comment_con.fl
+                                p
+                                    span.blueColor=reply.author_name
+                                    span=" 回复："
+                                    span.margin-4r.blueColor(target_aid = reply.target_aid)=reply.target_aname
+                                    span=comments.publish_time
+                                p=reply.text
+                            .delete_btn.fr.delete_comment
+                                button="删除评论"
+
+                br
+                .list_item.clearfix
+                    span.fl.margin-4r="打赏数：" +workdetail.rewards_num
+                    each reward in workdetail.rewards_dtl
+                        .img_list(author_id = reward.author_id)
+                            img(src = reward.author_avatar)
+                        span.margin-4r= reward.content + "元"
+
+
+
+block footer
+    script(type='text/javascript').
+        $(function () {
+            var swiper = new Swiper('.swiper-container', {
+                pagination: '.swiper-pagination',
+                slidesPerView: 1,
+                paginationClickable: true,
+                spaceBetween: 30,
+                loop: true
+            });
+            //删除作品
+            $('.delete_work').on('click',function () {
+                var _this = this;
+                var work_id = $(_this).parent('.work_con').attr('work_id');
+                $.ajax({
+                    url: './work/delete',
+                    type: 'POST',
+                    data: {
+                        work_id: work_id
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $(_this).parents('.work').remove();
+                            window.location.href = document.referrer;
+                        }
+                        else {
+                            console.log('删除失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            });
+
+            //删除评论
+            $('.delete_comment').on('click', function () {
+                var _this = this;
+                var comment_id = $(_this).parents('.comment_box').attr('comment_id');
+                var comNumber = $('.comNumber').text();
+                $.ajax({
+                    url: './work/delcomment',
+                    type: 'POST',
+                    data: {comment_id: comment_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $('.comNumber').text(comNumber - 1);
+                            $(_this).parents('.comment_list').remove();
+                        } else {
+                            console.log('删除作品评论失败：' + res);
+                        }
+                    },
+                    error: function () {
+                        console.log('删除作品评论失败');
+                    }
+                });
+            });
+        });

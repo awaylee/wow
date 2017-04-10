@@ -1,0 +1,135 @@
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/lib/jquery.loadTemplate-1.4.4.min.js")
+extends layout
+
+block content
+    header.bar.bar-nav
+        h1.title="搜索"
+        div.bar.bar-header-secondary
+            div.searchbar
+                a.searchbar-cancel#searchbar="搜索"
+                div.search-input
+                    label.icon.icon-search(for="search")
+                    input#search(type="search" placeholder="搜索展览活动")
+    div.content.margin
+        div.content-block-title
+            span="推荐标签"
+        div.card
+            div.card-content
+                div.card-content-inner
+                    div.tag-group.label
+                        span.tags(id="0001")="书法"
+                        span.tags(id="0002")="绘画"
+                        span.tags(id="0003")="古董"
+        div.content-block-title
+            span="时间"
+        div.card
+            div.card-content
+                div.card-content-inner
+                    div.tag-group.time
+                        span.tags(id="0")="今天"
+                        span.tags(id="1")="明天"
+                        span.tags(id="2")="后天"
+                        span.tags(id="3")="周末"
+                        span.tags(id="4")="一周内"
+                        span.tags(id="5")="一周后"
+        div.content-block-title
+            span="搜索结果"
+        div.result
+    script(type="text/html" id="template").
+        <div class="card">
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <a data-href=link>
+                        <div class="content-padded row">
+                            <div class="col-33">
+                                <img data-src=photos width="100%">
+                            </div>
+                            <div class="col-66">
+                                <label class="text-bold" field="title" data-content=name></label>
+                                <div class="text margin-top">
+                                    <span>时间：</span>
+                                    <span class="small-text" field="time" data-content=start_time></span>
+                                </div>
+                                <div class="text">
+                                    <span>场馆：</span>
+                                    <span class="small-text" field="address" data-content=area.name></span>
+                                </div>
+                                <div class="tag-group">
+                                    <span class="tags" data-template-bind='{"attribute": "content", "value": "name"}'></span>
+                                </div>
+                                <div class="place-icon index">
+                                    <svg class="icon" aria-hidden="true">
+                                        <use xlink:href="#icon-guanzhu"></use>
+                                    </svg>
+                                    <span filed="concern" data-content=views></span>
+                                    <svg class="red icon" aria-hidden="true">
+                                        <use xlink:href="#icon-zan"></use>
+                                    </svg>
+                                    <span filed="like" data-content=likes></span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+block footer
+    script(type="text/javascript").
+        var searchFlag = 0;
+        $('#search').focus(function(){
+            searchFlag = 1;
+            $('#cancel').click(function(){
+                searchFlag = 0;
+            });
+            console.log('用户正在输入');
+        });
+        $('.tags').click(function(){
+           if($(this).hasClass('tag_active')){
+              $(this).removeClass('tag_active');
+              return;
+           }
+           $(this).addClass('tag_active');
+           $(this).siblings().removeClass('tag_active');
+        })
+        $('#searchbar').on('click',function(){
+            if($('#search').val() !== ''){
+                var searchValue = $('#search').val();
+                var label_id = $('.label .tag_active').length !== 0 ? $('.label .tag_active')[0].id: '';
+                var time = $('.time .tag_active').length !== 0 ? $('.time .tag_active')[0].id: '';
+                function getData(){
+                    var json = {
+                        'tag':searchValue,
+                        'label_id':label_id,
+                        'time':time
+                    };
+                    return json;
+                }
+                //当前时间
+                var d = new Date();
+                var year = d.getFullYear();
+                var month = (d.getMonth() + 1) < 10 ? ('0' + d.getMonth() + 1) : (d.getMonth() + 1);
+                var day = d.getDate() < 10 ? ('0' + d.getDate()) : (d.getDate());
+                var now = year + "." + month + "." + day;
+                now = now.replace(/[^0-9]/g, '');
+                $.ajax({
+                     url:'#{root_path}/home/search/search',
+                     type: "POST",
+                     contentType: "application/json; charset=utf-8",
+                     data:JSON.stringify(getData()),
+                     success:function(data){
+                        var res = data.data;
+                        res.map(function(item){
+                            item.photos = item.photos[0];
+                            item.link="./exhibition?act_id="+ item.act_id;
+                            item.start_time = item.start_time + ' - ' + item.end_time;
+                        })
+                        $(".result").loadTemplate('#template', res);
+                     },
+                     error:function(errormsg){
+                        console.log(errormsg);
+                     }
+                })
+            }
+        })
+

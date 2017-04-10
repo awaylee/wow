@@ -1,0 +1,148 @@
+//
+   Created by Jeff on 2016/12/22.
+extends layout
+block content
+    header.bar.bar-nav
+        if(messages.length)
+            i.iconfont.icon-shanchu.icon.pull-right.whiteColor.delete_all
+        h1.title="私信"
+
+    div.content(style="background:#ffffff")
+        if(messages.length)
+          each message in messages
+            div.card.facebook-card.relative.slide_delete(message_id="#{message.message_id}")
+                div.card-header.no-border
+                    div.facebook-avatar
+                        img(src=message.avatar width="50px" height="50px")
+                    div.facebook-name
+                        span=message.name
+                .card-footer.no-border
+                    span.small-text=message.text
+                div.btn_delete
+                    button.btn_delete_click="删除"
+
+
+block footer
+    script(type="text/javascript").
+       var lines = $(".slide_delete");//获取所有行，对每一行设置监听
+       var len = lines.length;
+       var lastX, lastXForMobile;
+
+       // 用于记录被按下的对象
+       var pressedObj;  // 当前左滑的对象
+       var lastLeftObj; // 上一个左滑的对象
+
+       // 用于记录按下的点
+       var start;
+
+       // 网页在移动端运行时的监听
+       for (var i = 0; i < len; ++i) {
+           lines[i].addEventListener('touchstart', function(e){
+               lastXForMobile = e.changedTouches[0].pageX;
+               pressedObj = this; // 记录被按下的对象
+
+               // 记录开始按下时的点
+               var touches = event.touches[0];
+               start = {
+                   x: touches.pageX, // 横坐标
+                   y: touches.pageY  // 纵坐标
+               };
+           });
+
+           lines[i].addEventListener('touchmove',function(e){
+               // 计算划动过程中x和y的变化量
+               var touches = event.touches[0];
+               delta = {
+                   x: touches.pageX - start.x,
+                   y: touches.pageY - start.y
+               };
+
+               // 横向位移大于纵向位移，阻止纵向滚动
+               if (Math.abs(delta.x) > Math.abs(delta.y)) {
+                   event.preventDefault();
+               }
+           });
+
+           lines[i].addEventListener('touchend', function(e){
+               if (lastLeftObj && pressedObj != lastLeftObj) { // 点击除当前左滑对象之外的任意其他位置
+                   $(lastLeftObj).find(".btn_delete").fadeOut(500);
+                   $(lastLeftObj).find(".card-header").animate({marginLeft:"0"}, 500); // 右滑
+                   lastLeftObj = null; // 清空上一个左滑的对象
+               }
+               var diffX = e.changedTouches[0].pageX - lastXForMobile;
+               if (diffX < -150) {
+                   $(pressedObj).find(".btn_delete").fadeIn(500);
+                   $(pressedObj).find(".card-header").animate({marginLeft:"-40px"}, 500); // 左滑
+                   lastLeftObj && lastLeftObj != pressedObj &&
+                       $(lastLeftObj).find(".card-header").animate({marginLeft:"0"}, 500,function () {
+                           $(lastLeftObj).find(".btn_delete").fadeOut();
+                       }); // 已经左滑状态的按钮右滑
+                   lastLeftObj = pressedObj; // 记录上一个左滑的对象
+               }
+               else if (diffX > 150) {
+                 if (pressedObj == lastLeftObj) {
+                    $(pressedObj).find(".btn_delete").fadeOut(500);
+                   $(pressedObj).find(".card-header").animate({marginLeft:"0"}, 500); // 右滑
+                   lastLeftObj = null; // 清空上一个左滑的对象
+                 }
+               }
+           });
+       }
+       $(".btn_delete_click").click(function () {
+           var message_id = $(this).parents("[message_id]").attr("message_id");
+           $(this).parent().parent().remove();
+           $.ajax({
+               url: "../notice/delprivateone",
+               type: 'POST',
+               data:{"message_id":message_id},
+               success: function (res) {
+                   if (res.errno == "0") {
+                       console.log(res.data)
+                   }
+                   else {
+                       console.log("删除失败", res.data);
+                   }
+               },
+               error: function (err) {
+                   console.log(err);
+               }
+           });
+       });
+       $(".delete_all").click(function () {
+           var buttons1 = [
+               {
+                   text: '清空全部私信',
+                   label: true
+               },
+               {
+                   text: '确定',
+                   bold: true,
+                   color: 'danger',
+                   onClick: function () {
+                       $(".slide_delete").remove();
+                       $.ajax({
+                           url: "../notice/delprivateall",
+                           type: 'POST',
+                           success: function (res) {
+                                if(res.errno == "0"){
+                                    console.log(res.data)
+                                }
+                                else{
+                                    console.log("删除失败", res.data);
+                                }
+                           },
+                           error: function (err) {
+                                console.log(err);
+                           }
+                       })
+                   }
+               }
+           ];
+           var buttons2 = [
+               {
+                   text: '取消'
+               }
+           ];
+           var groups = [buttons1, buttons2];
+           $.actions(groups);
+       });

@@ -1,0 +1,361 @@
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/admin/add.css")
+    link(rel="stylesheet" href="#{root_path}/static/css/admin/wangEditor.min.css")
+    link(rel="stylesheet", href="#{root_path}/static/css/admin/calendar.css")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/calendar.js")
+block content
+    .content
+        h3 新增活动
+        div.describe
+            p
+                span="名称"
+                input#act_name(type="text")
+            select#act_status
+                option(value="0")="状态：无效"
+                option(value="1")="状态：有效"
+        div.describe
+            p
+                span="活动时间"
+                input#start_time.txt(type="text" readonly)
+                i=" - "
+                input#end_time.txt(type="text" readonly)
+        div.calendar#calendar_1
+        div.calendar#calendar_2
+        .describe
+            p
+                span="初始化点赞"
+                input#init_likes.txt(type="text")
+        .describe
+            p
+                span="初始化浏览量"
+                input#init_views.txt(type="text")
+        .describe
+            p
+                span="活动价格"
+                input#price.txt(type="text")
+        .describe
+        //    p
+        //        span="活动标签"
+        //        select#label_ids
+        //          each label in labels
+        //            option(value=label.label_id)=label.label_id+"-"+label.name
+        //        input.act_add#add_label(type="button" value="添加")
+        //.describe
+        //    div
+        //        span
+        //        div#textarea_label
+        //.describe
+        //    p
+        //        span="艺术家"
+        //        select#artist_ids
+        //          each art in arts
+        //            option(value=art.artist_id)=art.artist_id+"-"+art.name
+        //        input.act_add#add_art(type="button",value="添加")
+        //.describe
+        //    div
+        //        span
+        //        div#textarea_art
+        //.describe
+        //    p
+        //        span 选择场地
+        //        select#area_id
+        //          each area in areas
+        //            option(value=area.area_id)=area.area_id+"-"+area.name
+        .describe
+                span="轮播大图"
+                i.progress="当前无上传"
+                form#imageform(enctype="multipart/form-data")
+                    input#filechooser(type="file" name="big_photos")
+        ._img.photo
+        div.clear
+        .describe
+            span="视频"
+            i.progress="当前无上传"
+            form#imageform(enctype="multipart/form-data")
+                input#videochooser(type="file" name="video")
+        .photo.videos
+        .clear
+        //.describe
+            p
+                span 主要作品
+                select#work_ids
+                   each work in works
+                    option(value=work.work_id)=work.work_id+"-"+work.name
+                input.act_add#act_prod(type="button",value="添加")
+        div.describe
+            div
+                span
+                div#textarea_prod
+        div.editor
+            span.leftText="展览详情"
+            div#editor
+                 <div>请输入内容...</div>
+        .handle
+            span.margin-4r#save="保存并关闭"
+            span#cancel="取消"
+block footer
+    script(type="text/javascript" src="#{root_path}/static/js/lib/wangEditor.min.js")
+    script(type="text/javascript").
+        $(function(){
+        });
+
+        var editor = new wangEditor('editor');
+        editor.create();
+        var labelIds = [];//标签id列表
+        var artistIds = [];//艺术家列表
+        var photos = [];//图片url列表
+        var videos = [];//视频url列表
+        var workaIds = [];//作品id列表
+
+
+        //添加活动标签
+        $("#add_label").on("click",function(){
+            var checkText=$("#label_ids").val();
+            var span = '<span class="span">'+ checkText +'</span>';
+            var isRepeat = false;//判断数组里面是不是重复了
+            var len = labelIds.length;
+           if(len==0){      //判断是不是第一次加入
+               $("#textarea_label").append(span);
+               labelIds.push(checkText);
+           }else{
+               for(var i = 0; i < len; i++){
+                   if(labelIds[i] == checkText){
+                       alert("请勿重复添加标签");
+                       isRepeat = true;
+                       break;
+                   }
+               }
+               if(!isRepeat){
+                   $("#textarea_label").append(span);
+                   labelIds.push(checkText);
+               }
+           }
+        });
+
+        //添加艺术家
+        $("#add_art").on("click",function(){
+            var checkText=$("#artist_ids").val();
+            var span = '<span class="span">'+ checkText +'</span>';
+             var isRepeat = false;//判断数组里面是不是重复了
+             var len = artistIds.length;
+            if(len==0){      //判断是不是第一次加入
+                $("#textarea_art").append(span);
+                artistIds.push(checkText);
+            }else{
+                for(var i = 0; i < len; i++){
+                    if(artistIds[i] == checkText){
+                        alert("请勿重复添加艺术家");
+                        isRepeat = true;
+                        break;
+                    }
+                }
+                if(!isRepeat){
+                    $("#textarea_art").append(span);
+                    artistIds.push(checkText);
+                }
+            }
+        });
+
+        //上传图片并预览
+        $("input#filechooser").change(function(){
+            var file = this.files[0];
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+               var result = this.result;
+                var img = '<div class="img pic"><img alt="banner" src='+result+'><span class="close">&times;</span></div>'
+                $("._img").append(img);
+            };
+            reader.readAsDataURL(file);
+        });
+        //删除添加的图片
+        $(".photo .close").unbind('click').click(function () {
+            var index = $(this).parent('.img').index();
+            photos.splice(index, 1);
+            delete_img(index, 'big_photos');
+            $(this).parent(".img").remove();
+            filechooser.value = '';
+        });
+        //上传视频
+        $("input#videochooser").change(function(){
+            var file = this.files[0];
+            // 接受 ogg|mp4|flv|wmv 类型的视频
+            if (!/\/(?:ogg|mp4|flv|wmv)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+                var result = this.result;
+                videos.push(result);
+                //videos.push($("#videochooser").val());
+                var addVideo = '<div class="video"><video><source src='+result+'></source></video><div><img src="#{root_path}/static/images/play1.png" alt=""></div><span class="close">&times;</span><p>视频名称</p></div>';
+                $(".videos").append(addVideo);
+            };
+            reader.readAsDataURL(file);
+        });
+        //删除添加的视频
+        $(".video .close").unbind('click').click(function () {
+            var index = $(this).parent().index();
+            videos.splice(index, 1);
+            delete_img(index, 'video');
+            $(this).parent(".video").remove();
+            videochooser.value = "";
+        });
+        //主要作品添加
+        $("#act_prod").on("click",function(){
+            var checkText = $("#work_ids").val();
+            var span = '<span class="span">'+ checkText +'</span>';
+             var isRepeat = false;//判断数组里面是不是重复了
+             var len = workaIds.length;
+            if(len==0){      //判断是不是第一次加入
+                $("#textarea_prod").append(span);
+                workaIds.push(checkText);
+            }else{
+                for(var i = 0; i < len; i++){
+                    if(workaIds[i] == checkText){
+                        alert("作品重复了");
+                        isRepeat = true;
+                        break;
+                    }
+                }
+                if(!isRepeat){
+                    $("#textarea_prod").append(span);
+                    workaIds.push(checkText);
+                }
+            }
+        });
+        //保存
+            $("#save").on("click",function(){
+                    //活动名称
+                    var actName = $("#act_name").val();
+                    //活动状态
+                    var actStatus = $("#act_status").val();
+                    //活动开始时间
+                    var startTime = $("#start_time").val();
+                    startTime = new Date(startTime).getTime()/1000;
+                    //活动结束时间
+                    var endTime = $("#end_time").val();
+                    endTime = new Date(endTime).getTime()/1000;
+                    //初始化点赞
+                    var initLikes = $("#init_likes").val();
+                    //初始化浏览量
+                    var initViews = $("#init_views").val();
+                    //活动价格
+                    var price = $("#price").val();
+                    //活动场地
+                    var areaId = $("#area_id").val();
+                    //活动详情
+                    var detail = editor.$txt.html(); // 获取编辑器区域完整html代码
+                    console.log(getData());
+                    function getData(){
+                            var json = {
+                                'name':actName,
+                                'status':actStatus,
+                                'start_time':startTime,
+                                'end_time':endTime,
+                                'init_likes':initLikes,
+                                'init_views':initViews,
+                                'price':price,
+                                'label_ids':labelIds,
+                                'artist_ids':artistIds,
+                                'area_id':areaId,
+                                'work_ids':workaIds,
+                                'detail':detail
+                            };
+                            return json;
+                        }
+                    $.ajax({
+                        type:"POST",
+                        url:"#{root_path}/admin/addact/add",
+                        contentType: "application/json; charset=utf-8",
+                        data:JSON.stringify(getData()),
+                        success:function(data){
+                            if(data.errno == 0){
+                                console.log('请求成功。正在跳转...');
+                                window.location.href = "#{root_path}/admin/index"
+                            }
+                        },
+                        error:function(error){
+                            console.log(error);
+                        }
+                    });
+                });
+
+        //取消
+            $("#cancel").on("click",function(){
+                $("#act_name").val("");
+                $("#act_status").text("");
+                $("#start_time").val("");
+                $("#end_time").val("");
+                $("#init_likes").val("");
+                $("#init_views").val("");
+                $("#price").val("");
+                $("#area_id").val("");
+                $("#detaill").val("");
+                labelIds = [];//标签id列表
+                artistIds = [];//艺术家列表
+                photos = [];//图片url列表
+                videos = [];//视频url列表
+                workaIds = [];//作品id列表
+                $("#videochooser").val("");
+                $(".img").remove();
+                $(".span").remove();
+                $(".video").remove();
+            });
+            function doUpload(self){
+                $(self).parent().siblings('.progress')[0].innerHTML = '上传开始';
+                var parent = $(self)[0].parentNode;
+                var formData = new FormData($(parent)[0]);
+                $.ajax({
+                        url: '#{root_path}/admin/addact/upload',
+                        type: 'POST',
+                        cache: false,
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            if (res.errno == '0') {
+                                $(self).parent().siblings('.progress')[0].innerHTML = '上传成功';
+                            }
+                            else {
+                                $(self).parent().siblings('.progress')[0].innerHTML = '上传失败';
+                            }
+                            flag = 1;
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                     });
+            }
+        $('#calendar_1').calendar({
+            trigger: '#start_time',
+            zIndex: 999,
+            format: 'yyyy-mm-dd',
+            onClose: function (view, date, data) {
+                console.log('date:' + date)
+            }
+         });
+        $('#calendar_2').calendar({
+            trigger: '#end_time',
+            zIndex: 999,
+            format: 'yyyy-mm-dd',
+            onClose: function (view, date, data) {
+                console.log('date:' + date)
+            }
+         });
+        //多传一个name参数用来判断
+        function delete_img(index, name) {
+            $.ajax({
+                url: '#{root_path}/admin/editact/deleteimg',
+                type: 'POST',
+                data: {index: index, name: name},
+                success: function (res) {
+                    console.log(res);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }

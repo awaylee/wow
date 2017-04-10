@@ -1,0 +1,371 @@
+
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/sm/sm-extend.css")
+    script(type='text/javascript', src="#{root_path}/static/js/lib/sm/sm-extend.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/jquery.loadTemplate-1.4.4.min.js")
+block content
+    header.bar.bar-nav
+        h1.title="艺术圈"
+    .content
+        .card
+            .card-content
+                each feeling in feelings
+                    .card-content-inner.card_artsworld
+                        .row
+                            .col-20
+                                a(href="./personal?author_id=#{feeling.author_id}")
+                                    img.head_img(src=feeling.avatar width="100%" height="55px")
+                            .col-80
+                                .text.margin-top
+                                    span=feeling.name
+                                .text
+                                    - var date = new Date(feeling.publish_rtime*1000);
+                                    - var m = date.getMonth()+1;
+                                    - m = m < 10 ? ('0' + m) : m
+                                    - var d = date.getDate();
+                                    - d = d < 10 ? ('0' + d) : d;
+                                    - var h = date.getHours();
+                                    - var minute = date.getMinutes();
+                                    - minute = minute < 10 ? ('0' + minute) : minute;
+                                    - var time = m+"-"+d+" "+h+":"+minute;
+                                    span.gray=time
+                                .text.dimension
+                                    span.text=feeling.text
+                                .img_group
+                                    each picture in feeling.small_pictures
+                                        img.dimension_img(src=picture)
+                                .place-icon.margin-top.clearfix
+                                    span.text=feeling.publish_time
+                                    span.fr
+                                        if(feeling.is_like)
+                                            i.like.artworld_icon.iconfont.red.icon-xihuanfill
+                                        else
+                                            i.like.artworld_icon.iconfont.red.icon-xihuan
+                                        i.artworld_icon.iconfont.icon-huihuashezhi
+
+                                        //i.artworld_icon.iconfont.icon-liulan
+                                        //span=feeling.views
+                                .comment_area.display_none(feeling_id = "#{feeling.feeling_id}")
+                                    .comment_display
+                                    .comment_box
+                                        input.comment(type="text" placeholder="点击输入评论内容")
+                                        span.comment_btn="发表评论"
+            .load
+            script(type="text/html" id="template").
+                <div class="card-content-inner card_artsworld">
+                    <div class="row">
+                        <div class="col-20">
+                            <a href="./personal">
+                                <img src="" width="100%" height="55px">
+                            </a>
+                        </div>
+                        <div class="col-80">
+                            <div class="text margin-top">
+                                <span>123</span>
+                            </div>
+                            <div class="text">
+                                <span class="gray"></span>
+                            </div>
+                            <div class="text dimension">
+                                <span class="text"></span>
+                            </div>
+                            <div class="img_group">
+                                <img class="dimension_img" src=>
+                            </div>
+                            <div class="place-icon margin-top clearfix">
+                                <span class="text"></span>
+                                <span class="fr">
+                                    <i class="like artworld_icon iconfont red icon-xihuanfill"></i>
+                                    <i class="like artworld_icon iconfont red icon-xihuan"></i>
+                                    <i class="artworld_icon iconfont icon-huihuashezhi"></i>
+                                </span>
+                            </div>
+                            <div class="comment_area display_none" feeling_id="">
+                                <div class="comment_display"></div>
+                                <div class="comment_box">
+                                    <input class="comment" type="text" placeholder="点击输入评论内容">
+                                    <span class="comment_btn">发表评论</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            if (feelings.length>=10)
+                .text-center
+                    a.getmore(href="javascript:;")="查看更多"
+    .popup.popup-img
+        .content-block
+            img#dimension_big_img(src="" width="100%")
+
+
+
+
+block footer
+    script(type="text/javascript").
+        //获取更多艺术圈
+        $('.getmore').on('click', function () {
+            $(".load").loadTemplate('#template');
+        });
+
+        //点击图片放大
+        $(".dimension_img").click(function () {
+            $("#dimension_big_img")[0].src = $(this)[0].src;
+            $.popup('.popup-img');
+        });
+        $("#dimension_big_img").click(function () {
+            $.closeModal('.popup-img');
+        });
+        //获取评论
+        document.addEventListener("click",function (e) {
+            if($(e.target).hasClass("comment_dimension")){
+                recomment(e.target);
+            }
+            else if($(e.target).hasClass("icon-huihuashezhi")){
+                var comment_area = $(e.target).parents('.place-icon').next(".comment_area");
+                var feeling_id = comment_area.attr("feeling_id");
+                console.log(feeling_id);
+                //判断是否已经有内容，避免重复请求
+                if(!comment_area.find(".comment_display").children().length){
+                    $.ajax({
+                        url: './artsworld/getcomment',
+                        type: 'POST',
+                        data: {feeling_id: feeling_id},
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                var html = "";
+                                for (var i = 0; i < res.data.length; i++) {
+                                    //直接评论
+                                    if (!res.data[i].is_reply) {
+                                        //直接评论内容
+                                        html += "<div class='comment_content'"+"comment_id="+res.data[i].comment_id+">\
+                                                      <span class='comment_name' author_id="+res.data[i].author_id+">" + res.data[i].author_name + "</span>\
+                                                      <span>:</span>\
+                                                      <span class='comment_dimension no-margin-d'>" + res.data[i].text + "</span>\
+                                                  </div>";
+                                    } else {
+                                        //回复内容
+                                        html += "<div class='comment_content' "+"comment_id="+res.data[i].comment_id+">\
+                                                      <span class='comment_name' author_id="+res.data[i].author_id+">" + res.data[i].author_name + "</span>\
+                                                      <span class='small-text'>回复: </span>\
+                                                      <span class='recomment_name' target_aid="+res.data[i].target_aid+">" + res.data[i].target_aname + "</span>\
+                                                      <span>:</span>\
+                                                      <span class='comment_dimension no-margin-d'>" + res.data[i].text + "</span>\
+                                                  </div>";
+                                    }
+                                }
+                                comment_area.find(".comment_display").append(html);
+                                //console.log("获取评论成功");
+                            }
+                            else {
+                                console.log('获取评论失败');
+                            }
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+                $(e.target).parents().siblings(".comment_area").slideToggle(400);
+            }
+        });
+        function recomment(self) {
+            var _this = self;
+            var target_aname = $(self).parents().find(".comment_name").html();
+            var target_aid = $(self).parents().find(".comment_name").attr("author_id");
+            var target_id = $(_this).parents('.comment_area').attr("feeling_id");
+            var target_cid = $(_this).parents('.comment_content').attr("comment_id");
+            $.prompt('请输入回复内容', function (value) {
+                var html = "<div class='comment_content'>\
+                               <span class='comment_name'>我</span>\
+                               <span class='small-text'>回复</span>\
+                               <span class='recomment_name'>" + target_aname + "</span>\
+                               <span>:</span>\
+                               <span class='comment_dimension no-margin-d'>" + value + "</span>\
+                           </div>";
+                console.log(target_id, target_aname, value, target_cid);
+                if (value != "") {
+                    $(_this).parents('.comment_display').append(html);
+                    $.ajax({
+                        url: './artsworld/publishcomment',
+                        type: 'POST',
+                        data: {
+                            target_aname: target_aname,
+                            target_id: target_id,
+                            target_aid: target_aid,
+                            target_cid: target_cid,
+                            text: value
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                $.alert("回复成功");
+                            }
+                            else {
+                                console.log('回复失败');
+                                $.alert("回复失败");
+                            }
+                        },
+                        error: function (err) {
+                            $.alert("回复失败");
+                            console.log(err);
+                        }
+                    })
+                }
+            });
+        }
+
+        //发表评论
+        $(".comment_btn").on("click",function () {
+            var value = $(this).prev().val();
+            var feeling_id = $(this).parents('.comment_area').attr("feeling_id");
+            console.log(feeling_id);
+            var html = "<div class='comment_content'>\
+                              <span class='comment_name'>我</span>\
+                              <span>:</span>\
+                              <span class='comment_dimension no-margin-d'>" + value + "</span>\
+                       </div>";
+            if(value != ""){
+                $(this).parent().prev().append(html);
+                $(this).prev().val("");
+                $.ajax({
+                    url: './artsworld/comment',
+                    type: 'POST',
+                    data: {
+                        text: value,
+                        feeling_id: feeling_id
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $.alert("评论成功");
+                        }
+                        else {
+                            console.log('评论失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+        });
+        //喜欢
+        $(".like").click(function () {
+            var _this = this;
+            var feeling_id = $(this).parents().siblings(".comment_area").attr("feeling_id");
+            if ($(this).hasClass("icon-xihuan")) {
+                //添加点赞
+                $.ajax({
+                    url: './mood/addconcern',
+                    type: 'POST',
+                    data: {text: "添加点赞", feeling_id:feeling_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            console.log('添加关注成功');
+                            $(_this).removeClass("icon-xihuan").addClass("icon-xihuanfill");
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+            else {
+                //取消点赞
+                $.ajax({
+                    url: './mood/addconcern',
+                    type: 'POST',
+                    data: {text: "取消点赞", feeling_id:feeling_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            console.log('取消关注成功');
+                            $(_this).removeClass("icon-xihuanfill").addClass("icon-xihuan");
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+        });
+
+
+        /*function recomment(self) {
+            var _this = self;
+            var buttons1 = [
+                {
+                    text: '回复',
+                    bold: true,
+                    onClick: function () {
+                        //回复人名称
+                        var target_aname = $(self).parents().find(".comment_name").html();
+                        var target_aid = $(self).parents().find(".comment_name").attr("author_id");
+                        var target_id = $(_this).parents('.comment_area').attr("feeling_id");
+                        var target_cid = $(_this).parents('.comment_content').attr("comment_id");
+                        $.prompt('请输入回复内容', function (value) {
+                            var html = "<div class='comment_content'>\
+                                                       <span class='comment_name'>我</span>\
+                                                       <span class='small-text'>回复</span>\
+                                                       <span class='recomment_name'>" + target_aname + "</span>\
+                                                       <span>:</span>\
+                                                       <span class='comment_dimension no-margin-d'>" + value + "</span>\
+                                                   </div>";
+                            console.log(target_id, target_aname, value, target_cid);
+                            if (value != "") {
+                                $(_this).parents('.comment_display').append(html);
+                                $.ajax({
+                                    url: './artsworld/publishcomment',
+                                    type: 'POST',
+                                    data: {
+                                        target_aname: target_aname,
+                                        target_id: target_id,
+                                        target_aid: target_aid,
+                                        target_cid: target_cid,
+                                        text: value
+                                    },
+                                    success: function (res) {
+                                        console.log(res);
+                                        if (res.errno == "0") {
+                                            $.alert("回复成功");
+                                        }
+                                        else {
+                                            console.log('回复失败');
+                                            $.alert("回复失败");
+                                        }
+                                    },
+                                    error: function (err) {
+                                        $.alert("回复失败");
+                                        console.log(err);
+                                    }
+                                })
+                            }
+                        });
+                    }
+                },
+                {
+                    text: '举报',
+                    bold: true,
+                    color: 'danger',
+                    onClick: function () {
+                        $.alert("你选择了“举报“");
+                    }
+                }
+            ];
+            var buttons2 = [
+                {
+                    text: '取消',
+                    bg: 'danger'
+                }
+            ];
+            var groups = [buttons1, buttons2];
+            $.actions(groups);*/

@@ -1,0 +1,80 @@
+//
+   Created by liwei on 2017/1/6.
+
+extends layout
+
+block content
+    header.bar.bar-nav
+        h1.title=name
+
+    .content
+      //each message in messages
+      //  .card
+      //      .card-content
+      //          .card-content-inner
+      //              .row.private_left
+      //                  .col-20
+      //                      img.head_img(src=message.avatar width="100%" height="55px")
+      //                  .col-80.private_con
+      //                      span=message.text
+        //.card
+        //    .card-content
+        //        .card-content-inner
+        //            .row.private_right
+        //                .col-80.private_con
+        //                    | 欢迎使用艺术WOW，工作时间8:00-20:00
+        //                .col-20
+        //                    img.head_img(src="https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=1259465417,1570255129&fm=116&gp=0.jpg")
+
+    nav.bar.bar-tab.footer_private
+        input.textarea_text
+        span.send.fr="发 送"
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+
+            $('.send').on('click',function () {
+                var text = $('.textarea_text').val();
+                if (text != "") {
+                    $.ajax({
+                        url: './private/send',
+                        type: 'POST',
+                        data: {
+                            text: text
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                var html = "<div class='card'>\
+                                                <div class='card-content'>\
+                                                    <div class='card-content-inner'>\
+                                                        <div class='row private_right'>\
+                                                            <div class='col-80 private_con'>" + text + "</div>\
+                                                            <div class='col-20'>\
+                                                                <img class='head_img' src= !{ownAvatar} alt=''>\
+                                                            </div>\
+                                                        </div>\
+                                                    </div>\
+                                                </div>\
+                                             </div>";
+                                $('.content').append(html);
+                                $('.textarea_text').val("");
+                                $.alert('发送成功',function () {
+                                    $('.textarea_text').blur();
+                                });
+                                console.log("发送成功",res);
+                            }
+                            else {
+                                $.alert('发送失败');
+                                console.log('发送失败');
+                            }
+                        },
+                        error: function (err) {
+                            $.alert('发送失败');
+                            console.log(err);
+                        }
+                    });
+                }
+            })
+        });

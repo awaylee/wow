@@ -1,0 +1,235 @@
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/lib/jquery.loadTemplate-1.4.4.min.js")
+extends layout
+block content
+    div.C_wrap
+        include header
+        div.table
+            div.seek
+                div._search
+                    p.searchBar
+                        span="艺术家姓名"
+                        input.searchText(type="text")
+                    p.status
+                        span="状态"
+                    select.statusValue
+                        option(value="all")="全部"
+                        option(value="1")="有效"
+                        option(value="0")="无效"
+                div.searchBtn
+                    p.search.light-blue="搜索"
+                    a(href="javascript:;")="重置"
+            div.thead
+                span.text="艺术家列表"
+                span.text.num='('+artists.length+')'
+                ul
+                    li.blue
+                        a.line-text(href="./addart" style="color:#ffffff;")="新增"
+                    li.blue.delete
+                        span.line-text="删除"
+                    li.blue
+                        span.line-text="有效"
+                    li.blue
+                        span.line-text="无效"
+                    li.blue
+                        span.line-text="批量导入"
+                    li.blue
+                        span.line-text="下载批量表"
+            table
+                tr
+                    td
+                        input.checkall(type="checkbox",name="checkbox")
+                    td.ad_id="编号"
+                    td.ad_name="姓名"
+                    td.ad_sort="排序"
+                    td.ad_fans="粉丝数"
+                    td.ad_headpic="头像缩略图"
+                    td.ad_state="状态"
+                    td.operation="操作"
+                each artist in artists
+                    tr.item
+                        td
+                            input.checkbox(type="checkbox",name="checkbox")
+                        td
+                            span.artist_id=artist.artist_id
+                        td
+                            span=artist.name
+                        td
+                            span=artist.rank
+                        td
+                            span=artist.fans
+                        td
+                            img.tdimg(src=artist.small_avatar)
+                        td
+                            - if(artist.status)
+                              span="有效"
+                            - else
+                              span="无效"
+                        td
+                            a.margin-4r(href="./editart?artist_id=#{artist.artist_id}")="编辑"
+                            a(href="")="预览"
+            div.result(style='display:none;')
+                .thead: span.text 搜索结果
+                table
+                    thead
+                        tr
+                            td: input.checkall(type="checkbox",name="checkbox")
+                            td.ad_id="编号"
+                            td.ad_name="姓名"
+                            td.ad_sort="排序"
+                            td.ad_fans="粉丝数"
+                            td.ad_headpic="头像缩略图"
+                            td.ad_state="状态"
+                            td.operation="操作"
+                    tbody
+    script(type="text/html" id="template").
+            <tr class="item">
+                <td>
+                    <input type="checkbox" name="checkbox">
+                </td>
+                <td>
+                    <span data-content=artist_id></span>
+                </td>
+                <td>
+                    <span data-content=name></span>
+                </td>
+                <td>
+                    <span data-content=rank></span>
+                </td>
+                <td>
+                    <span data-content=fans></span>
+                </td>
+                <td>
+                    <img data-src=small_avatar class="tdimg"></img>
+                </td>
+                <td>
+                    <span data-content=status></span>
+                </td>
+                <td>
+                    <a class="margin-4r" href="./addact">编辑</a>
+                    <a href="javascript:;"></a>
+                </td>
+            </tr>
+block footer
+    script(type="text/javascript").
+        var checked = false;
+        var checkedNum = 0;
+        //点击搜索发送ajax请求
+        $('.search').click(function(){
+            var searchText = $('.searchText').val();
+            var status = $('.statusValue').val();
+            console.log(searchText, status);
+            function getData(){
+                var json = {
+                    'name':searchText,
+                    'status':(status == "all") ? "" : status,
+                }
+                return json;
+            }
+            $.ajax({
+                 url:'#{root_path}/admin/artmanage/search',
+                 type: "POST",
+                 contentType: "application/json; charset=utf-8",
+                 data:JSON.stringify(getData()),
+                 success:function(res){
+                    if(!res.data.length){
+                        alert('搜索结果为空,请重新输入');
+                        return;
+                    }
+                     $(".result").show().find("tbody").loadTemplate('#template', res.data);
+                 },
+                 error:function(errormsg){
+                    console.log(errormsg);
+                 }
+            })
+        });
+        //搜索条件重置
+        $('.reset').click(function(){
+            $('.searchText')[0].value = "";
+            $('.statusValue')[0].value = "all";
+        });
+        //删除操作
+        //点击删除按钮时搜索所有被选上的元素，并选取该行，然后remove
+        $('.delete').click(function(){
+            var delItem = $('.item').find('.checked').parent('td').parent('.item');
+            var idArray = [];
+            var delete_ad_id = delItem.find('.artist_id');
+            delete_ad_id.map(function(item){
+                idArray.push(delete_ad_id[item].innerHTML);
+            });
+            console.log(idArray);
+            if(delItem.length == 0){
+                alert('请勾选后再操作')
+            }
+            else{
+                delItem.remove();
+                deleteById(idArray);
+                //判断是否删除完毕，如果是就关闭全选
+                if($('.checkbox').length == 0){
+                    $('.checkall')[0].checked = false;
+                    checked = false;
+                }
+                $('.num')[0].innerHTML = "("+$('.checkbox').length+")";
+            }
+        });
+        //全选点击之后，为所有选择勾上
+        $('.checkall').click(function(){
+            $('.checkbox').toggleClass('checked');
+            addBackColor();
+            if(checked){//已经勾选再点击则取消
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            else{//未勾选则勾选
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            checked = !checked;
+        });
+        //勾选单个的时候判断是否勾选完毕，如果是就勾上全选
+        $('.checkbox').click(function(){
+            $(this).toggleClass('checked');
+            addBackColor();
+            $('.checkbox').map(function(item){
+                if($('.checkbox')[item].checked == true){
+                    checkedNum++;
+                }
+            })
+            console.log($('.checkbox').length);
+            if(checkedNum == $('.checkbox').length){
+                $('.checkall')[0].checked = true;
+                checked = true;
+            }
+            else{
+                $('.checkall')[0].checked = false;
+                checked = false;
+            }
+            checkedNum = 0;
+        })
+        //为选中的行增加背景色
+        function addBackColor(){
+            $('.item').removeClass('gray');
+            $('.item').find('.checked').parent('td').parent('.item').addClass('gray');
+        }
+        function deleteById(id){
+            $.ajax({
+                 url:'#{root_path}/admin/artmanage/delete',
+                 type: "POST",
+                 contentType: "application/json; charset=utf-8",
+                 data:JSON.stringify({artist_ids: id}),
+                 success:function(data){
+                    console.log(data);
+                    if(data.errno == 0){
+                        console.log("删除成功");
+                    }
+                    else{
+                        console.log("删除失败")
+                    }
+                 },
+                 error:function(errormsg){
+                    console.log(errormsg);
+                 }
+            })
+        }

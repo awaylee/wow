@@ -1,0 +1,14 @@
+extends layout
+
+block head
+
+block content
+    header.bar.bar-nav
+        h1.title="轮播详情"
+    .content(loaction = "#{ad.location}")
+        .content-padded.article_content
+            h2.h2_title=ad.name
+            .swiper_pic
+                img(src=ad.picture width="100%")
+            div
+                !{ad.text}

@@ -1,0 +1,240 @@
+extends layout
+
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+    script(type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js")
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+
+block content
+    header.bar.bar-nav
+        .clearfix
+            #chooseImage.pull-left.city
+                span.cityname="北京"
+            .header_search.search-input
+                input#search(type="search" placeholder="作家/作品/展览")
+                label.icon.icon-search(for="search")
+            .pull-right
+                span.icon.iconfont.icon-erweima
+        .clearfix
+            .buttons-tab.buttons-fixed.posi_nav
+                a.active.button(href="./home")="推荐"
+                a.button(href="./newwork")="新作"
+                a.button(href="./exhibition")="展览"
+
+    nav.bar.bar-tab.bar_tab
+        a.tab-item.external.active(href="./home")
+            i.icon.iconfont.icon-shouye
+            span.tab-label
+                span="首页"
+        a.tab-item.external(href="./find")
+            i.icon.iconfont.icon-yanjing
+            span.tab-label
+                span="发现"
+        a#issue.tab-item.external.create-actions(href="javascript:;")
+            i.icon.iconfont.icon-jiahao1
+        a.tab-item.external(href="./notice")
+            i.icon.iconfont.icon-sixin
+            span.tab-label
+                span="通知"
+        a.tab-item.external(href="./me")
+            i.icon.iconfont.icon-yonghu
+            span.tab-label
+                span="我的"
+
+    div.content.home
+        .Top_h
+        .tabs
+            #tab1.tab.active
+                div
+                    .home-swiper.swiper-container(data-loop="true", data-looped-slides="5")
+                        .swiper-wrapper
+                          each ad in ads
+                            .swiper-slide
+                                a(href="./swiper?location=#{ad.location}")
+                                    img(width="100%" src=ad.picture)
+                        .swiper-pagination
+                .mb_0
+                    .block_header
+                            i.iconfont.icon-iconfonthuo.hot
+                            span="推荐"
+                each work in works
+                    .card
+                        .row.work_padding
+                            a.col-50(href="./work?work_id=#{work.work_id}")
+                                .card-header.color-white.no-border.no-padding(valign="bottom")
+                                    img.card-cover.card_cover_h(src=work.small_picture)
+                            a.card-content.col-50(href="./work?work_id=#{work.work_id}")
+                                .card-content-inner.card_home.no-padding(style="padding:0;height:5.333rem")
+                                    .work_name=work.name
+                                    p.color-gray.margin-top=work.size
+                                    p.color-gray=work.create_time + "年"
+                                    p
+                                        if(work.is_sale == 0)
+                                            span.isSale="非卖品"
+                                        else if(work.is_sale == 1)
+                                            span.isSale="可售：￥" + work.price
+                                        else if(work.is_sale == 2)
+                                            span.isSale="已经售出"
+                        .facebook-card.home_facebook
+                            a(href="./personal?author_id=#{work.author.author_id}")
+                                .facebook-avatar.facebook_avatar
+                                    img.index_img(src=work.author.avatar)
+                            .facebook-name=work.author.name
+                            .facebook-date=work.publish_time
+                        .views.color-gray
+                            i.iconfont.icon-liulan
+                            span=work.views
+                        .like
+                            if(work.is_like)
+                                i.icon.iconfont.icon-xihuanfill(work_id="#{work.work_id}")
+                                span.like_num=work.likes
+                            else
+                                i.icon.iconfont.icon-xihuan(work_id="#{work.work_id}")
+                                span.like_num=work.likes
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            $(".swiper-container").swiper({
+                pagination: '.swiper-pagination',
+                slidesPerView: 'auto',
+                centeredSlides: true,
+                paginationClickable: true,
+                autoplay: 3000,
+                loop: true,
+                loopedSlides: $(".swiper-slide").length
+            });
+            //搜索功能
+            document.addEventListener("click", function (e) {
+                if ($(e.target).hasClass("icon-search")) {
+                    console.log(1);
+                }
+            });
+            $("#search").on("change", function () {
+                if ($(this).val() !== "") {
+                    window.location.href = "./home/search?value=" + $(this).val();
+                }
+            });
+
+            //喜欢
+            $(".like").click(function () {
+                var like;
+                var work_id = $(this).find("i").attr("work_id");
+                var likeNum = Number($(this).children(".like_num").text());
+                var className = $(this).children()[0].getAttribute("class");
+                if ($(this).children().hasClass("icon-xihuan")) {
+                    className = className.replace("xihuan", "xihuanfill");
+                    $(this).children(".like_num").text(likeNum + 1);
+                    like = 1;
+                }
+                else {
+                    className = className.replace("xihuanfill", "xihuan");
+                    $(this).children(".like_num").text(likeNum - 1);
+                    like = 0;
+                }
+                $(this).children()[0].setAttribute("class", className);
+                event.stopPropagation();
+
+                //ajax请求
+                $.ajax({
+                    url: '#{root_path}/home/home/addlike',
+                    type: 'POST',
+                    data: {work_id: work_id, like: like},
+                    success: function () {
+                        console.log('请求成功');
+                    },
+                    error: function () {
+                        console.log('请求失败');
+                    }
+                })
+            });
+            if (!{signFlag}) {
+                //判断是否在微信端
+                $(document).ready(function () {
+                    var url = location.href.split('#')[0];
+                    //进行encodeURIComponent
+                    url = encodeURIComponent(url);
+                    $.ajax({
+                        url: './home/sign',
+                        method: "POST",
+                        contentType: "application/json",
+                        data: {url: url},
+                        success: function (res) {
+                            var sign_data = res.data;
+                            sign(sign_data);
+                        },
+                        error: function (err) {
+                            if (isAndroid && err.status == 0) {
+                                var sign_data = err.data;
+                                sign(sign_data);
+                            }
+                            console.log(err);
+                        }
+                    });
+                });
+
+                function sign(data) {
+                    wx.config({
+                        debug: false,
+                        appId: data.appid,
+                        timestamp: data.timestamp,
+                        nonceStr: data.nonceStr,
+                        signature: data.signature,
+                        jsApiList: ['getLocation', 'chooseImage', 'uploadImage']
+                    });
+
+                    //验证成功
+                    wx.ready(function () {
+                        wx.getLocation({
+                            type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+                            success: function (res) {
+                                //$.alert(res);
+                                var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                                var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                                var speed = res.speed; // 速度，以米/每秒计
+                                var accuracy = res.accuracy; // 位置精度
+                                //$.alert("经度："+longitude);
+                                //$.alert("纬度："+latitude);
+                                $.ajax({
+                                    url:'./home/location',
+                                    type:'POST',
+                                    data:{longitude:longitude, latitude:latitude},
+                                    success:function () {
+
+                                    },
+                                    error:function () {
+
+                                    }
+
+                                });
+                            },
+                            fail: function (res) {
+                                $.alert('获取地理位置失败');
+                            }
+                        });
+                    });
+                    //验证失败
+                    wx.error(function (res) {
+                        //alert(JSON.stringify(data));
+                    });
+
+                }
+            }
+
+            // 5.1 拍照、本地选图
+            var images = {
+                localId: [],
+                serverId: []
+            };
+            document.querySelector('#chooseImage').onclick = function () {
+                wx.chooseImage({
+                    success: function (res) {
+                        images.localId = res.localIds;
+                        alert('已选择 ' + res.localIds.length + ' 张图片');
+                    }
+                });
+            };
+
+
+        });

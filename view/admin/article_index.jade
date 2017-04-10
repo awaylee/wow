@@ -1,0 +1,132 @@
+extends ./common/sidebar
+
+block main
+    .fx_right_content
+        .back
+            a(href="javascript:history.back(-1);")="返回"
+        .article_top
+            .article_title(article_id = article.article_id)
+                span.margin-6r="文章标题："+article.name
+                span="文章ID："+article.article_id
+                .delete_btn.delete_article
+                    button="删除"
+
+            .comment_box.clearfix
+                .comment_head.fl(author_id = article.author_id)
+                    img(src = article.author_avatar)
+                .comment_con.fl
+                    p
+                        span.margin-4r=article.author_name
+                        - var date = new Date(article.publish_time*1000);
+                        - var y = date.getFullYear();
+                        - var m = date.getMonth()+1;
+                        - m = m < 10 ? ('0' + m) : m
+                        - var d = date.getDate();
+                        - d = d < 10 ? ('0' + d) : d;
+                        - var h = date.getHours();
+                        - var minute = date.getMinutes();
+                        - minute = minute < 10 ? ('0' + minute) : minute;
+                        - var time =y+"-" + m+"-"+d+" "+h+":"+minute;
+                            span=time
+        .article_con
+            div
+              !{article.content}
+        .list_item
+            span="分享数："+article.shares_num
+        .list_item.clearfix
+            span.fl="点赞数："+article.likes_num
+            each like in article.likes_dtl
+                .img_list(author_id = like.author_id)
+                    img(src = like.author_avatar)
+
+        .list_item
+            span="评论数："
+              span.comNum=article.comments_num
+        each comments in article.comments_dtl
+            .comment_box.clearfix( comment_id = '#{comments.comment_id}')
+                div.clearfix
+                    .comment_head.fl( author_id = '#{comments.author_id}')
+                        img(src=comments.author_avatar)
+                    .comment_con.fl
+                        p
+                            span.blueColor.margin-4r=comments.author_name
+                            span=comments.publish_time
+                        p=comments.text
+                    .delete_btn.fr.delete_comment
+                        button="删除评论"
+                each reply in comments.replys
+                    .replys.clearfix
+                        .comment_con.fl
+                            p
+                                span.blueColor=reply.author_name
+                                span=" 回复："
+                                span.margin-4r.blueColor(target_aid = reply.target_aid)=reply.target_aname
+                                span=comments.publish_time
+                            p=reply.text
+                        .delete_btn.fr.delete_comment
+                            button="删除评论"
+
+        br
+        .list_item.clearfix
+            span.fl="打赏数："+ article.rewards_num
+            each reward in article.rewards_dtl
+                .paly_person.margin-6r.fl(author_id=reward.author_id)
+                    .img_list.fl
+                        img(src= reward.author_avatar)
+                    span.fl=reward.content
+
+
+block footer
+    script(type='text/javascript').
+        $(function () {
+            //删除作品
+            $('.delete_article').on('click', function () {
+                var _this = this;
+                var article_id = $(_this).parent('.article_title').attr('article_id');
+                $.ajax({
+                    url: './article/delete',
+                    type: 'POST',
+                    data: {
+                        article_id: article_id
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $(_this).parents('.fx_right_content').remove();
+                            window.location.href = document.referrer;
+                        }
+                        else {
+                            console.log('删除失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            });
+
+            //删除评论
+            $('.delete_comment').on('click', function () {
+                var _this = this;
+                var comment_id = $(_this).parent('.comment_box').attr('comment_id');
+                var comNumber = $('.comNum').text();
+                $.ajax({
+                    url: './article/delcomment',
+                    type: 'POST',
+                    data: {comment_id: comment_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $('.comNum').text(comNumber - 1);
+                            $(_this).parent('.comment_box').remove();
+                        } else {
+                            console.log('删除作品评论失败：' + res);
+                        }
+                    },
+                    error: function () {
+                        console.log('删除作品评论失败');
+                    }
+                });
+            });
+
+        });

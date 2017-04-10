@@ -1,0 +1,104 @@
+extends ./common/sidebar
+block head
+    //link(rel="stylesheet", href="#{root_path}/static/css/admin/calendar.css")
+    //script(type="text/javascript", src="#{root_path}/static/js/lib/calendar.js")
+
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-datepicker.css")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-datepicker.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-datepicker.zh-CN.min.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/echarts.min.js")
+
+block main
+    .jumbotron: .row
+        .col-md-8: #chat(style="width:100%; height:500px")
+        .col-md-4: form(method="post")
+            .input-group
+                input.form-control(type="text" name="date" readonly=true placeholder="选择查询日期")
+                span.input-group-btn: button.btn.btn-default(type="submit")="查询"
+            .calendar
+
+block footer
+    script(type="text/javascript").
+        // 基于准备好的dom，初始化echarts实例
+        var data = !{JSON.stringify(user_online)};
+        var dateStr = !{JSON.stringify(date)};
+
+        var times = [], counts = [], max = 0;
+        for (var i in data) {
+            var item = data[i];
+            times.push(Date.format(new Date(item.time * 1000), "h:mm"));
+            counts.push(item.count);
+            if (item.count > max) {
+                max = item.count;
+            }
+        }
+        // 使用刚指定的配置项和数据显示图表。
+        echarts.init(document.getElementById('chat')).setOption({
+            title: {
+                text: Date.format(new Date(dateStr), "yyyy年MM月dd日") + ' 在线人数示意图',
+                left: 'center'
+            },
+            tooltip: {
+                show: true,
+                formatter: '{b0} 日:   {c0} 人',
+                trigger: 'axis',
+                axisPointer: {
+                    animation: false
+                }
+            },
+            legend: {
+                data: ['日期']
+            },
+            dataZoom: [{
+                type: 'inside',
+                start: 30,
+                end: 85,
+            }, {
+                handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                handleSize: '80%',
+                handleStyle: {
+                    color: '#fff',
+                    shadowBlur: 3,
+                    shadowColor: 'rgba(0, 0, 0, 0.6)',
+                    shadowOffsetX: 2,
+                    shadowOffsetY: 2
+                }
+            }],
+            xAxis: {
+                boundaryGap: false,
+                axisLine: {onZero: true},
+                data: times
+            },
+            yAxis: {
+                splitNumber: Math.ceil(max / 5)
+            },
+            grid: {
+                left: 5,
+                right: 5,
+                containLabel: true
+            },
+            series: {
+                name: '人数',
+                symbolSize: 8,
+                hoverAnimation: false,
+                type: 'line',
+                data: counts,
+            }
+        });
+
+        var day = 24 * 60 * 60 * 1000;
+        var curDate = new Date();
+        var befor3m = new Date(curDate.getTime() - (day * 30 * 3));
+        var befor1d = new Date(curDate.getTime() - day);
+        var defaultDay = dateStr.length > 1 ? new Date(dateStr) : curDate;
+
+        var inputbox = $("input[name=date]").val(Date.format(defaultDay, "yyyy-MM-dd"));
+        $('.calendar').datepicker({
+            format: "yyyy-mm-dd",
+            language: "zh-CN",
+            endDate: curDate,
+            startDate: befor3m,
+            date: defaultDay,
+        }).on("changeDate", function (event) {
+            inputbox.val(Date.format(event.date, "yyyy-MM-dd"));
+        });

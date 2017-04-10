@@ -1,0 +1,228 @@
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/admin/calendar.css")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/calendar.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/jquery.loadTemplate-1.4.4.min.js")
+block content
+    div.C_wrap
+        include header
+        div.table.vip_table
+            div.seek
+                div._search
+                    p.searchBar
+                        span="会员昵称"
+                        input.userName(type="text")
+                    p.searchBar
+                        span="会员编号"
+                        input.userId(type="text")
+                div.regitime
+                    p
+                        span="注册时间"
+                        input.txt.regi_from(type="text" id="startTime")
+                        span=" -"
+                        input.txt.regi_until(type="text" id="endTime")
+                div.searchBtn
+                    p.search.light-blue="搜索"
+                    a(href="(javascript:;")="重置"
+                div.calendar#calendar_1
+                div.calendar#calendar_2
+            div.thead
+                span.text="会员列表"
+                span.text="("+users.length+")"
+                ul
+                    li.blue
+                        a.line-text(href="html/add-art.jade" style="color:#ffffff;")="关注场地"
+                    li.blue
+                        a.line-text(href="html/add-art.jade" style="color:#ffffff;")="关注艺术家"
+                    li.blue
+                        a.line-text(href="html/add-art.jade" style="color:#ffffff;")="想去的展览"
+                    li.blue
+                        span.line-text="批量导出"
+            table
+                tr
+                    td
+                        input.checkall(type="checkbox",name="checkbox")
+                    td.ad_id="编号"
+                    td.ad_title="会员昵称"
+                    td.ad_source="注册来源"
+                    td.ad_time="注册时间"
+                    td.ad_banner="轮播缩略图"
+                    td.ad_tel="手机号"
+                    td.ad_city="邮箱"
+                  each user in users
+                    tr.item
+                        td
+                            input.checkbox(type="checkbox",name="checkbox")
+                        td
+                            span=user.user_id
+                        td
+                            span=user.name
+                        td
+                            span=user.source
+                        td
+                            span=user.register_date
+                        td
+                            img.tdimg(src=user.small_avatar)
+                        td
+                            span=user.phone
+                        td
+                            span=user.email
+            div.result
+    script(type="text/html" id="template").
+        <div class="thead">
+            <span class="text">搜索结果</span>
+        </div>
+        <table>
+            <tr>
+                <td><input type="checkbox" name="checkbox"></td>
+                <td class="ad_id">用户id</td>
+                <td class="ad_title">用户来源</td>
+                <td class="ad_location">注册时间</td>
+                <td class="ad_pic">标签</td>
+                <td class="ad_href">小头像</td>
+                <td class="ad_state">电话</td>
+                <td class="ad_state">城市</td>
+                <td class="operation">操作</td>
+            </tr>
+            <tr class="item">
+                <td>
+                    <input type="checkbox" name="checkbox">
+                </td>
+                <td>
+                    <span data-content=user_id></span>
+                </td>
+                <td>
+                    <span data-content=source></span>
+                </td>
+                <td>
+                    <span data-content=regi_time></span>
+                </td>
+                <td>
+                    <span data-content=labels></span>
+                </td>
+                <td>
+                    <img data-src=small_avatar class="tdimg"></img>
+                </td>
+                <td>
+                    <span data-content=tel></span>
+                </td>
+                <td>
+                    <span data-content=city></span>
+                </td>
+                <td>
+                    <a class="margin-4r" href="./addact">编辑</a>
+                    <a href="javascript:;"></a>
+                </td>
+            </tr>
+        </table>
+block footer
+    script(type="text/javascript").
+        var checked = false;
+        var checkedNum = 0;
+        //点击搜索发送ajax请求
+        //- $('.search').click(function(){
+        //-     var userName = $('.userName').val();
+        //-     var userId = $('.userId').val();
+        //-     var register_date_start = $('.regi_from').val();
+        //-     var register_date_end = $('.regi_until').val();
+        //-     console.log(userName, userId, register_date_start, register_date_end);
+        //-     function getData(){
+        //-         var json = {
+        //-             'name':userName,
+        //-             'user_id': userId,
+        //-             'register_date_start':register_date_start,
+        //-             'register_date_end':register_date_end
+        //-         }
+        //-         return json;
+        //-     }
+        //-     $.ajax({
+        //-          url:'#{root_path}/admin/vipmanage/search',
+        //-          type: "POST",
+        //-          contentType: "application/json; charset=utf-8",
+        //-          data:JSON.stringify(getData()),
+        //-          success:function(res){
+        //-             if(!res.data.length){
+        //-                 alert('搜索结果为空,请重新输入');
+        //-                 return;
+        //-             }
+        //-             $(".result").loadTemplate('#template', res.data[0]);
+        //-          },
+        //-          error:function(errormsg){
+        //-             console.log(errormsg);
+        //-          }
+        //-     })
+        //- });
+        //搜索条件重置
+        $('.reset').click(function(){
+            $('.searchText')[0].value = "";
+            $('.statusValue')[0].value = "all";
+        });
+        //全选点击之后，为所有选择勾上
+        $('.checkall').click(function(){
+            $('.checkbox').toggleClass('checked');
+            addBackColor();
+            if(checked){//已经勾选再点击则取消
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            else{//未勾选则勾选
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            checked = !checked;
+        });
+        //勾选单个的时候判断是否勾选完毕，如果是就勾上全选
+        $('.checkbox').click(function(){
+            $(this).toggleClass('checked');
+            addBackColor();
+            $('.checkbox').map(function(item){
+                if($('.checkbox')[item].checked == true){
+                    checkedNum++;
+                }
+            })
+            console.log($('.checkbox').length);
+            if(checkedNum == $('.checkbox').length){
+                $('.checkall')[0].checked = true;
+                checked = true;
+            }
+            else{
+                $('.checkall')[0].checked = false;
+                checked = false;
+            }
+            checkedNum = 0;
+        })
+        $('#calendar_1').calendar({
+            trigger: '#startTime',
+            zIndex: 999,
+            format: 'yyyy-mm-dd',
+            onSelected: function (view, date, data) {
+                console.log('event: onSelected')
+            },
+            onClose: function (view, date, data) {
+                console.log('event: onClose')
+                console.log('view:' + view)
+                console.log('date:' + date)
+                console.log('data:' + (data || 'None'));
+            }
+         })
+        $('#calendar_2').calendar({
+            trigger: '#endTime',
+            zIndex: 999,
+            format: 'yyyy-mm-dd',
+            onSelected: function (view, date, data) {
+                console.log('event: onSelected')
+            },
+            onClose: function (view, date, data) {
+                console.log('event: onClose')
+                console.log('view:' + view)
+                console.log('date:' + date)
+                console.log('data:' + (data || 'None'));
+            }
+         })
+        //为选中的行增加背景色
+        function addBackColor(){
+            $('.item').removeClass('gray');
+            $('.item').find('.checked').parent('td').parent('.item').addClass('gray');
+        }

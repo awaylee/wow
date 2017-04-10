@@ -1,0 +1,58 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet" href="#{root_path}/static/css/admin/wangEditor.min.css")
+block main
+    .publish_title
+        .buttons-tab.buttons_tab
+            a#show_tab1.btn.btn-default(href="#{root_path}/admin/operation/publish")="发布作品"
+            a#show_tab2.btn.btn-primary(href="#{root_path}/admin/pbarticle")="发布文章"
+            a#show_tab3.btn.btn-default(href="#{root_path}/admin/pbmood")="发布心情"
+        .button_right
+            button.issue.btn.btn-success="发布"
+    div.tabs_box
+        .tabs
+            #tab2.tab
+                .tab_content
+                    p.input_wrap.border_b.margin-6t
+                        input.work_title(type="text" placeholder="请输入文章标题")
+                    div.textarea_article
+                        div#editor(style="height:400px;max-height:500px;")
+
+block footer
+    script(type="text/javascript" src="#{root_path}/static/js/lib/wangEditor.js")
+    script(type="text/javascript").
+        $(function () {
+            //tab2发布文章
+            var editor = new wangEditor('editor');
+            editor.create();
+
+            $('.issue').on('click',function () {
+                var name = $('.work_title').val();
+                var content = editor.$txt.html(); // 获取编辑器区域完整html代码
+                $.ajax({
+                    url: './pbarticle/publish',
+                    type: 'POST',
+                    data: {
+                        name: name,
+                        content: content
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            alert("发布成功");
+                            window.location.href ="#{root_path}/admin/pbarticle";
+                        }
+                        else {
+                            console.log('发布失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        alert("发布失败");
+                    }
+                });
+
+            });
+
+
+        });

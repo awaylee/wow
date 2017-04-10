@@ -1,0 +1,158 @@
+extends layout
+
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+    script(type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js")
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+block content
+    header.bar.bar-nav
+        div.clearfix
+            .pull-left.city
+                span.cityname="北京"
+            .header_search.search-input
+                input#search(type="search" placeholder="作家/作品/展览")
+                label.icon.icon-search(for="search")
+            .pull-right
+                span.icon.iconfont.icon-erweima
+        .buttons-tab.buttons-fixed.posi_nav
+            a.button(href="./home")="推荐"
+            a.button(href="./newwork")="新作"
+            a.active.button(href="./exhibition")="展览"
+
+    nav.bar.bar-tab.bar_tab
+        a.tab-item.external.active(href="./home")
+            i.icon.iconfont.icon-shouye
+            span.tab-label
+                span="首页"
+        a.tab-item.external(href="./find")
+            i.icon.iconfont.icon-yanjing
+            span.tab-label
+                span="发现"
+        a#issue.tab-item.external.create-actions(href="javascript:;")
+            i.icon.iconfont.icon-jiahao1
+        a.tab-item.external(href="./notice")
+            i.icon.iconfont.icon-sixin
+            span.tab-label
+                span="通知"
+        a.tab-item.external(href="./me")
+            i.icon.iconfont.icon-yonghu
+            span.tab-label
+                span="我的"
+
+    div.content
+        .Top_h
+        div
+            .tabs
+                #tab3.tab.active
+                  each act in acts
+                    .card
+                        a(href="./site?act_id=#{act.act_id}")
+                            .card-header
+                                img.card-cover(src=act.picture_small)
+                        .card-content
+                            .card-content-inner
+                                .area_title
+                                    span.pull-left=act.name
+                                    a.color-gray.pull-right(href="./map")
+                                        i.icon.iconfont.icon-zuobiao
+                                        span.padding-l=act.distance+"米"
+                                .area_name.color-gray
+                                    span="发起人："+act.sponsor_name
+                    //.card
+                    //    a(href="./site")
+                    //        .card-header
+                    //            img.card-cover(src="https://ss0.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&quality=100&size=b4000_4000&sec=1486459782&di=4d721e755525ef7bdfda424416c3a8dc&src=http://dimg02.c-ctrip.com/images/tg/439/497/361/827985d778874b7c834687836ea7a2af.jpg")
+                    //    .card-content
+                    //        .card-content-inner
+                    //            .area_title
+                    //                span.pull-left="布拉格农场"
+                    //                span.color-gray.pull-right
+                    //                    i.icon.iconfont.icon-zuobiao
+                    //                    span.padding-l="2.3公里"
+                    //            .area_name.color-gray
+                    //                span="发起人：呜呜我"
+
+                //#tab3.tab
+                //  each area in areas
+                //    .card
+                //        .card-header
+                //            img.card-cover(src=area.photos[0])
+                //        .card-content
+                //            .card-content-inner
+                //                .area_title
+                //                    span.pull-left=area.name
+                //                    span.pull-right=area.distance+"米"
+                //                .area_name.color-gray
+                //                    i.icon.iconfont.icon-zuobiao
+                //                    span.padding-l=area.addr
+block footer
+    script(type="text/javascript").
+        $(function () {
+            //搜索功能
+            document.addEventListener("click", function (e) {
+                if ($(e.target).hasClass("icon-search")) {
+                    if ($("#search").val() !== "") {
+                        window.location.href = "./home/search?value=" + $(this).val();
+                    }
+                }
+            });
+            $("#search").on("blur", function () {
+                if ($(this).val() !== "") {
+                    window.location.href = "./home/search?value=" + $(this).val();
+                }
+            });
+        });
+    //    $('.isconcern').click(function(){
+    //        var self = this;
+    //        var text = $('.is_likes')[0].innerHTML;
+    //        $(self).find('.is_likes')[0].innerHTML = (text == 0) ?  1 : 0;
+    //        var fans = $(self).find('.likes')[0].innerHTML;
+    //        fans = fans - 0;
+    //        $.ajax({
+    //            url:'#{root_path}/home/exhibition/concern',
+    //            type:'POST',
+    //            data:{text: text},
+    //            success:function(res){
+    //                if(res.errno == "0"){
+    //                    if(res.data == '添加关注成功'){
+    //                        $(self).find('.likes')[0].innerHTML = fans +　1;
+    //                        $(self).find('.icon').addClass('red').removeClass('gray');
+    //                        console.log('添加关注成功');
+    //                    }
+    //                    else{
+    //                        $(self).find('.likes')[0].innerHTML = fans -　1;
+    //                        $(self).find('.icon').addClass('gray').removeClass('red');
+    //                        console.log('取消关注成功');
+    //                    }
+    //                }
+    //                else{
+    //                    console.log('添加关注失败');
+    //                }
+    //            },
+    //            error:function(err){
+    //                console.log(err);
+    //            }
+    //        })
+    //    });
+    //    //播放视频
+    //    var play = false;
+    //    document.addEventListener('touchstart', function (event) {
+    //        if(event.srcElement.tagName == 'VIDEO'){
+    //            if(!play){
+    //                $.showPreloader();
+    //                setTimeout(function () {
+    //                    $.hidePreloader();
+    //                }, 2000);
+    //                event.srcElement.previousSibling.style.display = 'none';
+    //                event.srcElement.play();
+    //                play = !play;
+    //            }
+    //            else{
+    //                event.srcElement.previousSibling.style.display = 'block';
+    //                event.srcElement.pause();
+    //                play = !play;
+    //            }
+    //        }
+    //    },false);
+    //

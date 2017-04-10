@@ -1,0 +1,361 @@
+//
+   Created by Jeff on 2016/12/23.
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+block content
+    header.bar.bar-nav
+        h1.title='文章'
+    div.content.content_article(article_id = "#{detail.article_id}")
+        div.content-padded.article_content
+            h2.h2_title=detail.name
+            div
+                !{detail.content}
+                .text-right
+                    i.iconfont.icon-jubao.gray.report
+        div.card
+            div.card-content
+                div.list-block.border: ul
+                    li: div.item-content
+                        div.class-media.red#like
+                            if(detail.is_like)
+                                i.iconfont.artworld_icon.icon-xihuanfill
+                            else
+                                i.iconfont.artworld_icon.icon-xihuan
+                        div.item-inner
+                            div.item.text_left
+                                each like in likes
+                                  a(href="./personal?author_id=#{like.author_id}")
+                                    img.head_img(src=like.avatar width="30px" height="30px")
+                        if(likes.length)
+                            i.concern_people.icon.iconfont.icon-xiangyoujiantou
+                .card-content-inner
+                    textarea.article_comment(type="textarea" placeholder="评论")
+                    span.artilce_btn.button="发表评论"
+        div.card.card_con
+            if(comments.length != 0)
+                .comment_head
+                    i.iconfont.icon-huixingzhen.red
+                    span.margin-4l="评论"
+
+            each comment in comments
+                .review(comment_id = '#{comment.comment_id}')
+                    .facebook-card.work_card
+                        .facebook-avatar.work_avatar
+                            img.head_img(src=comment.author_avatar width="50px" height="50px")
+                        .comment_name(author_id = "#{comment.author_id}")=comment.author_name
+                        .comment_time=comment.publish_time
+                    .content-padded.comment_dimension.comment_con=comment.text
+                    .reply_con
+                        each reply in comment.replys
+                            .reply(comment_id = '#{reply.target_cid}')
+                                span.person_name.reply_name(author_id="#{reply.author_id}")=reply.author_name
+                                span="回复："
+                                span.person_name(target_aid="#{reply.target_aid}")=reply.target_aname
+                                span.comment_con=reply.text
+            .award
+                button.award_btn="打赏"
+                .award_person
+                    span="13人打赏"
+                .item-inner
+                    .item.text-center.award_img
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+                        img.head_img(src="#{root_path}/static/images/find.jpg" width="30px" height="30px")
+    .award_page.popup
+        header.bar.bar-nav
+            a.icon.iconfont.icon-fanhui1.pull-left.whiteColor.back
+            h1.title="打赏作者"
+        .content.white
+            .hb.relative
+                img(src="#{root_path}/static/images/hb.png" width="100%")
+                img.award_author(src=detail.author.avatar)
+            .award_detail
+                .head_name=detail.author.name
+                .text=""
+            .money
+                ul
+                    li
+                        i="5"
+                        | &nbsp;
+                        span="元"
+                    li.award_margin
+                        i="10"
+                        | &nbsp;
+                        span="元"
+                    li
+                        i="15"
+                        | &nbsp;
+                        span="元"
+                        | &nbsp;
+                    li
+                        i="20"
+                        | &nbsp;
+                        span="元"
+                    li.award_margin
+                        i="25"
+                        | &nbsp;
+                        span="元"
+                    li
+                        i="30"
+                        | &nbsp;
+                        span="元"
+                .other_money.text-center
+                    a.other_award(href="javascript:;")="其它金额"
+                .award_tip.text-center.color-gray="打赏是为表示鼓励而对文章或作品的无偿赠与"
+    //举报
+    .report_page.popup
+        header.bar.bar-nav
+            a.icon.iconfont.icon-fanhui1.pull-left.whiteColor.close
+            h1.title="举报作者"
+        .content
+            .content-block-title.gray.report_title="请选择举报原因"
+            .list-block
+                ul
+                    li.item-content
+                        .item-inner="内容造假"
+                    li.item-content
+                        .item-inner="存在版权或著作权纠纷"
+                    li.item-content
+                        .item-inner="色情、暴力、谩骂侮辱等不良信息"
+                    li.item-content
+                        .item-inner="违背法律，或触及道德问题"
+                    li.item-content
+                        .item-inner="其他"
+
+
+
+block footer
+    script(type="text/javascript").
+        $(".concern_people").click(function () {
+            window.location.href="./article/like";
+        });
+
+        //打赏
+        $(".award_btn").click(function () {
+            $.popup('.award_page');
+        });
+        $('.money li').on('click', function () {
+            $(this).addClass('active').siblings('li').removeClass('active');
+        });
+
+        //其它金额
+        $('.other_award').on('click', function () {
+            $.prompt('其它金额', function (value) {
+
+            })
+        });
+        $(".back").click(function () {
+            $.closeModal('.award_page');
+        });
+
+        $("#like").click(function () {
+            var className = $(this).children()[0].getAttribute("class");
+            var _this = this;
+            if($(this).children().hasClass("icon-xihuan")){
+                className = className.replace("xihuan", "xihuanfill");
+                //添加点赞
+                $.ajax({
+                    url: './article/addconcern',
+                    type: 'POST',
+                    data: {text: "添加点赞"},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            console.log('添加关注成功');
+                            $(_this).children()[0].setAttribute("class", className);
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+            else{
+                className = className.replace("xihuanfill", "xihuan");
+                //取消点赞
+                $.ajax({
+                    url: './article/addconcern',
+                    type: 'POST',
+                    data: {text: "取消点赞"},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            console.log('取消关注成功');
+                            $(_this).children()[0].setAttribute("class", className);
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+        });
+
+        $(".comment_con").click(function () {
+            var self = this;
+            recomment(self);
+        });
+        //回复评论
+        function recomment(self) {
+            var _this = self;
+            var rename = $(_this).parent().find('.reply_name').html();
+            var target_aid = $(_this).parent().find(".reply_name").attr("author_id");
+            var target_id = $('.content').attr("article_id");
+            var target_cid = $(_this).parent().attr("comment_id");
+            console.log(rename, target_aid, target_id, target_cid);
+            $.prompt('请输入回复内容', function (value) {
+                var html = "<div class='reply'>\
+                                <span class='person_name'>我</span>\
+                                <span>回复：</span>\
+                                <span class='person_name'>" + rename + ':' + "</span>\
+                                <span class='comment_con'>" + value + "</span>\
+                           </div>";
+                if (value != "") {
+                    $(_this).parents('.review').find('.reply_con').append(html);
+                    $.ajax({
+                        url: './article/recomment',
+                        type: 'POST',
+                        data: {
+                            target_aname: rename,
+                            target_id: target_id,
+                            target_aid: target_aid,
+                            target_cid: target_cid,
+                            text: value
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                $.alert("回复成功");
+                            }
+                            else {
+                                console.log('回复失败');
+                            }
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    })
+                }
+            });
+        }
+
+        //发表评论
+        $(".artilce_btn").on("click", function () {
+            var value = $(this).prev().val();
+            var html = "<div class='card'>\
+                            <div class='facebook-card work_card'>\
+                                <div class='facebook-avatar work_avatar'>\
+                                    <img class='head_img' src= !{info.avatar} width='50px' height='50px'>\
+                                </div>\
+                                <div class='comment_name'>我</div>\
+                                <div class='comment_time'>刚刚</div>\
+                            </div>\
+                            <div class='content-padded comment_dimension'>\
+                                <span class='comment_con'>" + value + "</span>\
+                            </div>\
+                        </div>";
+            if (value != "") {
+                //$(html).insertBefore(".award");
+                $.ajax({
+                    url: './article/comment',
+                    type: 'POST',
+                    data: {
+                        text: value
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $(html).insertBefore(".award");
+                            $.alert("评论成功");
+                        }
+                        else {
+                            console.log('评论失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+                $(this).prev().val("");
+            }
+        });
+
+        //举报一篇文章
+        $('.report').on('click', function () {
+            $.popup('.report_page');
+        });
+        $(".close").click(function () {
+            $.closeModal('.report_page');
+        });
+        var report_article_id = $('.content_article').attr('article_id');
+        $('.item-content').on('click', function () {
+            var content = $(this).text();
+            console.log(content,report_article_id);
+            $.ajax({
+                url: './article/report',
+                type: 'POST',
+                data: {content: content, report_article_id: report_article_id},
+                success: function (res) {
+                    if (res.errno != 0) {
+                        $.alert('举报失败');
+                        console.log("举报失败", res);
+                    } else {
+                        $.alert('举报成功', function () {
+                            $.closeModal('.report_page');
+                        })
+                    }
+                },
+                error: function (res) {
+                    $.alert('举报失败');
+                    console.log(res)
+                }
+            })
+        });
+
+//        $('.isconcern').click(function () {
+//            var text = $(this).children().html();
+//            var self = $(this).children()[0];
+//            console.log(text);
+//            var author_id = $(this).parent().attr("author_id");
+//            $.ajax({
+//                url: '../me/addconcern',
+//                type: 'POST',
+//                data: {text: text, author_id: author_id},
+//                success: function (res) {
+//                    console.log(res);
+//                    if (res.errno == "0") {
+//                        if (res.data == '添加关注成功') {
+//                            self.innerHTML = "已关注";
+//                            console.log('添加关注成功');
+//                        }
+//                        else {
+//                            self.innerHTML = "+关注";
+//                            console.log('取消关注成功');
+//                        }
+//                    }
+//                    else {
+//                        console.log('添加关注失败');
+//                    }
+//                },
+//                error: function (err) {
+//                    console.log(err);
+//                }
+//            })
+//        });

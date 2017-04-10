@@ -1,0 +1,144 @@
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/admin/add.css")
+block content
+    .content
+        h3="新增广告"
+        .describe
+            p
+                span="广告名称"
+                input#ad_name(type="text")
+            select#ad_status
+                option(value="0")="状态：无效"
+                option(value="1")="状态：有效"
+        .describe
+            p
+                span="广告位置"
+                select#ad_location
+                    option(value="首页轮播-1")="首页轮播-1"
+        .describe
+            p
+                span="链接"
+                input#ad_url(type="text")
+        .describe
+            span="Banner"
+            i.progress="当前无上传"
+            form#imageform(enctype="multipart/form-data")
+                input#filechooser.clear(type="file" name="file" size="40")
+        .photo
+        .clear
+        .handle
+            span#save="保存并关闭"
+            span#cancel="取消"
+block footer
+     script(type="text/javascript").
+         var photos = [];//相册列表
+         var flag = 0;
+            //上传图片并预览
+         filechooser.onchange = function() {
+                var files = this.files;
+                var file = files[0];
+                // 接受 jpeg, jpg, png 类型的图片
+                if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+                doUpload();//发起上传图片请求
+                var reader = new FileReader();
+                reader.onload = function() {
+                    var result = this.result;
+                    photos.push(result);
+                    var img = '<div class="img pic"><img alt="banner" src='+result+'><span class="close">&times;</span></div>';
+                    $(".photo").append(img);
+                };
+                reader.readAsDataURL(file);
+            };
+         //删除添加的图片
+         $(".photo .close").unbind('click').click(function () {
+             var index = $(this).parent('.img').index();
+             photos.splice(index, 1);
+             delete_img(index);
+             $(this).parent(".img").remove();
+             filechooser.value = '';
+         });
+            //保存
+            $("#save").on("click",function(){
+                if(!flag){
+                    alert('请上传广告图片');
+                    return
+                }
+                var adName = $("#ad_name").val();
+                var adStatus = $("#ad_status").val();
+                var adLocation = $("#ad_location").val();
+                var adUrl = $("#ad_url").val();
+                function getData(){
+                    var json = {
+                        'name':adName,
+                        'status':adStatus,
+                        'location':adLocation,
+                        'url':adUrl
+                    };
+                    return json;
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "#{root_path}/admin/addad/add",
+                    contentType: "application/json; charset=utf-8",
+                    data:JSON.stringify(getData()),
+                    success: function(data){
+                        if(data.errno == 0){
+                            console.log('请求成功。正在跳转...');
+                            flag = 0;
+                            window.location.href = "#{root_path}/admin/admanage"
+                        }
+                    },
+                    error:function(error){
+                        console.log(error);
+                    }
+                });
+            });
+            //取消
+            $("#cancel").on("click",function(){
+                $("#ad_name").val("");
+                $("#ad_status").val(0);
+                $("#ad_location").val();
+                $("#ad_url").val("");
+                photos = [];
+                filechooser.value = '';
+                $(".img").remove();
+            });
+
+            function doUpload() {
+                $('.progress')[0].innerHTML = '上传开始';
+                 var formData = new FormData($("#imageform")[0]);
+                 $.ajax({
+                    url: '#{root_path}/admin/addad/uploadimg',
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        if (res.errno == '0') {
+                            $('.progress')[0].innerHTML = '上传成功';
+                        }
+                        else{
+                            $('.progress')[0].innerHTML = '上传失败';
+                        }
+                        flag = 1;
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                 });
+            }
+            function delete_img(index) {
+                $.ajax({
+                    url: '#{root_path}/admin/addad/deleteimg',
+                    type: 'POST',
+                    data: {index: index},
+                    success: function (res) {
+                        console.log(res);
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }

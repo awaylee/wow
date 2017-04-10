@@ -1,0 +1,57 @@
+extends layout
+
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+block content
+    header.bar.bar-nav
+        h1.title="发现"
+    nav.bar.bar-tab.bar_tab
+        a.tab-item.external(href="./home")
+            i.icon.iconfont.icon-shouye
+            span.tab-label
+                span="首页"
+        a.tab-item.external.active(href="./find")
+            i.icon.iconfont.icon-yanjing
+            span.tab-label
+                span="发现"
+        a#issue.tab-item.external.create-actions(href="javascript:;")
+            i.icon.iconfont.icon-jiahao1
+        a.tab-item.external(href="./notice")
+            i.icon.iconfont.icon-sixin
+            span.tab-label
+                span="通知"
+        a.tab-item.external(href="./me")
+            i.icon.iconfont.icon-yonghu
+            span.tab-label
+                span="我的"
+    div.content.find
+        div.card.relative
+            div.card-content
+                a(href="./daily")
+                    div.card-content-inner
+                        span.find_text="每日精选"
+                        img.find_img(src="#{root_path}/static/images/find.jpg" width="100%" height="120px")
+        div.card.relative
+            div.card-content
+                a(href="./artsworld")
+                    div.card-content-inner
+                        span.find_text="艺术圈"
+                        img.find_img(src="#{root_path}/static/images/find.jpg" width="100%" height="120px")
+        div.card.relative
+            div.card-content
+                a(href="./salework")
+                    div.card-content-inner
+                        span.find_text="可售艺术品"
+                        img.find_img(src="#{root_path}/static/images/find.jpg" width="100%" height="120px")
+        div.card.relative
+            div.card-content
+                a.alert-text(href="#")
+                    div.card-content-inner
+                        span.find_text="官方合作"
+                        img.find_img(src="#{root_path}/static/images/find.jpg" width="100%" height="120px")
+
+
+block footer
+    script(type="text/javascript").
+

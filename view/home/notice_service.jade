@@ -1,0 +1,79 @@
+extends layout
+
+block content
+    header.bar.bar-nav
+        h1.title="官方客服"
+
+    .content
+        .card.display_none
+            .card-content
+                .card-content-inner
+                    .row.service_servicer
+                        .col-20
+                            img.head_img(src="#{root_path}/static/images/w.png" width="100%" height="55px")
+                        .col-80.service_con
+                            | 欢迎使用艺术WOW，工作时间8:00-20:00
+
+    nav.bar.bar-tab.footer_service
+        input.text_server
+        span.send.fr="发送"
+        //span.expression
+        //    i.icon.iconfont.icon-xiaolian
+        //span.augment
+        //    i.icon.iconfont.icon-jiahao
+
+
+
+block footer
+    script(type="text/javascript").
+        setTimeout(function () {
+            $('.display_none').slideDown();
+        },1000);
+
+        //发送消息
+        $('.send').on('click',function () {
+            var content = $('.text_server').val();
+            if(content == "" || content.length ==0){
+                $.alert('请输入发送的消息',function () {
+                    $('.text_server').focus();
+                })
+            } else {
+               $.ajax({
+                   url:'./sendserver',
+                   type:'POST',
+                   data:{content:content},
+                   success:function (res) {
+                       if(res.errno != 0){
+                           $.alert('发送失败',function () {
+                               $('.text_server').focus();
+                           });
+                           console.log('发送失败：',res)
+                       } else {
+                           var html = "<div class='card'>\
+                                           <div class='card-content'>\
+                                               <div class='card-content-inner'>\
+                                                   <div class='row private_right'>\
+                                                       <div class='col-80 private_con'>" + content + "</div>\
+                                                       <div class='col-20'>\
+                                                           <img class='head_img' src= !{ownAvatar} alt=''>\
+                                                       </div>\
+                                                   </div>\
+                                               </div>\
+                                           </div>\
+                                        </div>";
+                           $('.content').append(html);
+                           $('.text_server').val('');
+                           $.alert("发送成功",function () {
+                               $('.text_server').blur();
+                           });
+                       }
+                   },
+                   error:function (res) {
+                       $.alert('发送失败', function () {
+                           $('.text_server').blur();
+                       });
+                   }
+               })
+            }
+        });
+

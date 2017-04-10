@@ -1,0 +1,52 @@
+extends layout
+
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/lib/md5.js")
+
+block content
+        div.C_wrap
+            div.header
+                h1="艺术WOW"
+            div.login_container
+                div.form_box
+                    form
+                        div.input_box
+                            input.username(type="text" name="user" placeholder="请输入登录账号" value="testname1")
+                        div.input_box
+                            input.password(type="password" name="psw" placeholder="请输入登录密码" value="12345678")
+                        div.input_box
+                            input.verification.code_txt(type="text" name="code" placeholder="请输入验证码" value="111")
+                            div.code_img
+                                | FGHJ
+                        div.input_box
+                            input#checkbox(type="checkbox")
+                            label(for="checkbox")="自动登录"
+                    div.btn_box.login
+                        a.button.button-big(href="javascript:;")="立即登录"
+block footer
+     script(type="text/javascript").
+        $('.login').click(function(){
+            var username = $('.username').val();
+            var password = $('.password').val();
+            var verification = $('.verification').val();
+            if(username == '' ||　password == '' || verification == ''){
+                alert('请输入正确的用户名和密码');
+                return
+            }
+            $.ajax({
+                type:'POST',
+                url:'#{root_path}/admin/login/verify',
+                data: { username: username, password: hex_md5(password), verification: verification},
+                success: function(data){
+                    if(data.errno !== 0){
+                        alert(data.errmsg);
+                    }
+                    else{
+                        window.location.href="./index";
+                    }
+                },
+                error: function(err){
+                    console.log(err);
+                }
+            })
+        });

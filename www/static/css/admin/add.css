@@ -1,0 +1,219 @@
+body{
+    overflow-x: hidden;
+}
+.content{
+    width: 90%;
+    margin:0 auto;
+}
+.content h3{
+    font-size: 24px;
+    line-height: 52px;
+    font-weight: 700;
+    color: #333333;
+}
+.content .describe{
+    margin-bottom:25px;
+    line-height: 25px;
+    font-size: 16px;
+    overflow: hidden;
+}
+.content .describe p{
+    padding-right: 120px;
+    float: left;
+}
+.content .describe>div{
+    padding-right: 120px;
+    float: left;
+}
+.content .describe>div >div{
+    width: 280px;
+    height: 150px;
+    border:1px solid #cccccc;
+    float: left;
+}
+.content .describe span{
+    display: block;
+    float: left;
+    width: 100px;
+    text-align: right;
+    padding-right: 20px;
+    height: 25px;
+}
+.leftText{
+    font-size: 16px;
+    line-height: 25px;
+    display: block;
+    width: 100px;
+    text-align: right;
+    padding-right: 20px;
+    height: 25px;
+}
+.content .describe input{
+    width: 300px;
+    height: 23px;
+}
+.content .describe .txt{
+    width: 115px;
+}
+.content .describe .act_add{
+    width: 75px;
+    margin-left: 20px;
+}
+.content .describe #sell{
+    width:13px;
+    height: 13px;
+}
+.content .describe select{
+    width: 180px;
+    height: 23px;
+}
+.content .describe .add_pic{
+    width: 55px;
+    height: 23px;
+    border:1px solid #333333;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 23px;
+    display: inline-block;
+    cursor: pointer;
+}
+.content .describe textarea{
+    width: 280px;
+    height:150px;
+}
+.content .img{
+    margin-left: 120px;
+    margin-bottom:20px;
+    width:154px;
+    height: 84px;
+    position: relative;
+    float: left;
+}
+.clear:after{
+    display: block;
+    content: "";
+    height: 0;
+    visibility: hidden;
+    clear: both;
+}
+.content .img img,.content .video video{
+    width: 154px;
+    height: 84px;
+}
+.content .img span,.content .video span{
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    border: 1px solid #ccc;
+    border-radius:50%;
+    font-size: 18px;
+    line-height: 20px;
+    text-align: center;
+    right: -10px;
+    top: -10px;
+    background: #ffffff;
+    cursor: pointer;
+}
+.content .photo{
+    margin-left: 120px;
+    margin-bottom:20px;
+    min-height: 84px;
+    height: auto;
+}
+.content .photo .pic{
+    margin:0;
+    margin-right: 20px;
+    margin-bottom:20px;
+    width:154px;
+    height: 84px;
+    position: relative;
+    float: left;
+}
+.content .video{
+    margin-left: 120px;
+    margin-bottom:20px;
+    width:154px;
+    height: 84px;
+    position: relative;
+    float: left;
+    border:1px solid #ccc;
+}
+.content .video p{
+    line-height: 20px;
+}
+.content .video div{
+    border: 1px solid #333333;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -25px;
+    margin-top: -25px;
+    text-align: center;
+}
+.content .video div img{
+    padding-top: 8px;
+}
+.T-top{
+    height: 126px;
+}
+.content .describe .textarea{
+    width: 650px;
+    height: 350px;
+    border:1px solid #333333;
+    float: left;
+}
+.content .handle{
+    margin: 16px 0 20px 120px;
+    height: 27px;
+    line-height: 27px;
+}
+.content .handle span{
+    display: block;
+    float: left;
+    width: 84px;
+    height: 25px;
+    text-align: center;
+    line-height: 25px;
+    border:1px solid #333333;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.content .describe .span{
+    display: inline-block;
+    width:90px;
+    text-align: center;
+    padding:3px;
+    font-size: 12px;
+    background: #cccccc;
+    border-radius: 5px;
+    margin:3px;
+}
+.wangEditor-container{
+    left: 120px;
+    top: -20px;
+}
+.editor{
+    width: 800px;
+}
+#editor{
+    height: 300px;
+}
+.progress{
+    position: absolute;
+    left: 500px;
+    color: #f00b0d;
+}
+.map{
+    position: absolute;
+    width: 600px;
+    height: 400px;
+    top: 100px;
+    left: 800px;
+}
+#allmap{
+    height: 100%;
+}

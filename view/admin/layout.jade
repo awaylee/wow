@@ -1,0 +1,26 @@
+doctype html
+html
+    head
+        title= title
+        //- 引用样式表
+        meta(name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0")
+        meta(charset="UTF-8")
+        link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap.css")
+        link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-theme.css")
+        link(rel="stylesheet", href="#{root_path}/static/css/iconfont/iconfont.css")
+        link(rel="stylesheet", type="text/css", href="#{root_path}/static/css/admin/reset.css")
+        link(rel="stylesheet", type="text/css", href="#{root_path}/static/css/admin/admin.css")
+
+        script(type="text/javascript", src="#{root_path}/static/js/lib/utils.js")
+        script(type="text/javascript", src="#{root_path}/static/js/lib/jquery/jquery.min.js")
+        script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap.js")
+        script(type="text/javascript", src="#{root_path}/static/js/lib/jquery.loadTemplate-1.4.4.min.js")
+        block head
+
+    body
+        //- 页面自定义header部分
+        block header
+        //- 页面内容
+        block content
+        //- 页面自定义页脚部分
+        block footer

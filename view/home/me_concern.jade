@@ -1,0 +1,18 @@
+//
+   Created by Jeff on 2016/12/22.
+
+extends layout
+
+block content
+    header.bar.bar-nav
+        h1.title="我的"
+    div.content.me_concern
+      each follow in follows
+        div.card: div.card-content: div.card-content-inner
+            div.row.concern
+                a(href="../personal?author_id=#{follow.author_id}")
+                    div.col-66
+                        img.head_img(src=follow.avatar width="50px" height="50px")
+                        span.follow_name=follow.name
+                div.col-33.private_concern
+                    a.button(href="../private?target_id=#{follow.author_id}&name=#{follow.name}")="私信"

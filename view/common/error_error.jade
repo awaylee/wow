@@ -1,0 +1,43 @@
+doctype html
+html
+    head
+        title= title
+        style.
+            * {
+                margin: 0;
+                padding: 0;
+                font-family: "微软雅黑";
+                color: #ffffff;
+            }
+
+            html, body {
+                height: 100%;
+                width: 100%;
+            }
+
+            body {
+                background: #ffffff;
+            }
+
+            body > div {
+                position: relative;
+                top: 150px;
+            }
+
+            .title {
+                color: #cc0033;
+                font-size: 44px;
+                text-align: center;
+            }
+
+            .content {
+                color: #404040;
+                font-size: 24px;
+                margin-top: 40px;
+                text-align: center;
+            }
+    body
+        //- 页面内容
+        .title= errno
+        .content= errmsg
+

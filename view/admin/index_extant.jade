@@ -1,0 +1,99 @@
+//
+   Created by liwei on 2017/1/12.
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/echarts.min.js")
+
+block main
+    .jumbotron
+        #chart(style="width:100%; height:500px")
+    .bootstrap-table
+        table
+            colgroup
+                col(span=1 style="width: 120px;")
+            thead: tr
+                th(data-field="day" data-align="center" data-valign="middle" data-sortable="true")="日期"
+                th(data-field="news_count" data-align="center" data-valign="middle")="新增数"
+                th(data-field="actives_count" data-align="center" data-valign="middle")="活跃数"
+                th(data-field="remains_one" data-align="center" data-valign="middle")="次日留存"
+                th(data-field="remains_three" data-align="center" data-valign="middle")="三日留存"
+                th(data-field="remains_seven" data-align="center" data-valign="middle")="七日留存"
+            tbody
+    .table_extant
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+
+            var diag = !{JSON.stringify(diag)};
+            var remains = !{JSON.stringify(remains)};
+            var page = !{JSON.stringify(page)};
+
+            var actives = [], news = [], daies = [];
+
+            if (diag) {
+                for (var i in diag) {
+                    var item = diag[i];
+                    actives.push(item.actives_count);
+                    news.push(item.news_count);
+                    daies.push(Date.format(new Date(item.day * 1000), "M.dd"));
+                }
+            }
+
+            // 使用刚指定的配置项和数据显示图表。
+            echarts.init(document.getElementById('chart')).setOption({
+                title: {
+                    text: '留存查询',
+                    subtext: '用户数量：!{users}',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['活跃数', '新增数'],
+                    left: 'right'
+                },
+                grid: {
+                    left: "0.1%",
+                    right: "1.4%",
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: daies
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: '活跃数',
+                        type: 'line',
+                        data: actives
+                    },
+                    {
+                        name: '新增数',
+                        type: 'line',
+                        data: news
+                    }
+                ]
+            });
+
+            $("table").bootstrapTable({
+                columns: [{
+                    field: "day",
+                    title: '日期',
+                    formatter: function (value, row, index) {
+                        return Date.format(new Date(value * 1000), "yyyy-MM-dd");
+                    }
+                }],
+                data: remains,
+                striped: true, //是否显示行间隔色
+            });
+        });
+

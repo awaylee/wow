@@ -1,0 +1,129 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+    script(type="text/javascript", src="#{root_path}/static/js/admin.js")
+    script#tpl_table_option(type="text/template")
+        .btn-group.btn-group-xs(role="group")
+            button.btn.btn-danger
+                span.glyphicon.glyphicon-remove
+                =" 删除"
+            button.btn.btn-default
+                span.glyphicon.glyphicon-list-alt
+                =" 详情"
+block main
+
+    .toolbar.btn-toolbar
+        .btn-group(role="group")
+            button.btn.btn-primary
+                span.glyphicon.glyphicon-plus
+                =" 新增"
+            //button.btn.btn-danger
+                span.glyphicon.glyphicon-remove
+                =" 删除"
+            button.btn.btn-success
+                span.glyphicon.glyphicon-edit
+                =" 权限"
+    .table_box: table
+
+
+block footer
+    script(type="text/javascript").
+        var data = !{JSON.stringify(admininfo)};
+
+        $(function () {
+            /*
+             function tableHeight() {
+             return $(window).height() - 50;
+             }
+
+             $(window).resize(function () {
+             $('#table').bootstrapTable('resetView', {
+             height: tableHeight()
+             })
+             });
+             */
+
+            $("table").bootstrapTable({
+                toolbar: ".toolbar",
+                //toolbarAlign: "right",
+                columns: [
+                    /*
+                    {
+                        title: "全选",
+                        field: "select",
+                        checkbox: true,
+                        width: 20,
+                        align: "center",
+                        valign: "middle",
+                    },
+                    */
+                    {
+                        title: "账号",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "员工姓名",
+                        field: "realname",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "拥有权限",
+                        field: "right",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "最后登录时间",
+                        field: "last_login_date",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            return Date.format(new Date(value * 1000), "yyyy-MM-dd");
+                        }
+                    },
+                    {
+                        title: "操作",
+                        field: "user_id",
+                        align: "center",
+                        valign: "middle",
+                        width: 140,
+                        formatter: function (value, row, index) {
+                            var tpl = $("#tpl_table_option").html();
+                            var hnode = $(tpl).attr("id", value);
+                            return hnode[0].outerHTML;
+                            //return "<span id='" + value + "'>详情</span>";
+                        }
+                    }
+                ],
+                data: data,
+                striped: true,
+                cache: false,
+                sortable: true,
+                sortName: 'user_id',
+                sortOrder: 'asc',
+                //sidePagination: "server",
+                search: true,
+                showRefresh: false,
+                showToggle: true,
+                showColumns: true,
+                pagination: true,
+                smartDisplay: false,
+                paginationLoop: false,
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 10,
+                queryParams: function (params) {
+                    return {
+                        pageSize: params.limit,
+                        offset: params.offset,
+                        sortOrder: params.order,
+                    };
+                },
+                //url: '/admin/index/index_data'
+            });
+        });

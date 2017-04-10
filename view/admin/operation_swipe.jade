@@ -1,0 +1,181 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet" href="#{root_path}/static/css/admin/wangEditor.min.css")
+block main
+    .swipe_box.clearfix
+      each ad in ads
+        .swipe(location=ad.location)
+            .swipe_img
+                img(src = ad.picture title=ad.name)
+            if(ad.picture)
+              i.issue_cancel.iconfont.icon-Error(data-target="#myModal" data-toggle="modal")
+    .swipe_box.clearfix
+        .swipe.swipe_add
+            .show
+                i.iconfont.icon-zhaoxiangji
+                    form.uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:180px; z-index:99;")
+                        input.filechooser(type="file" name="mood_img" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+
+    .swipe_p
+        select
+            option(value="1")="轮播1"
+            option(value="2")="轮播2"
+            option(value="3")="轮播3"
+            option(value="4")="轮播4"
+            option(value="5")="轮播5"
+    .swipe_p
+        input.swipe_title(type="text" placeholder="轮播标题")
+    div.textarea_box
+        div#editor(style="height:400px;max-height:500px;")
+    .btns.clearfix
+        button.fr.save="保存"
+        button.fr.delete="删除"
+
+    #myModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
+        .zoom_body
+            .zoom_box.modal-content(style="height:auto")
+                .modal-header="删除该条轮播？"
+                .modal-footer
+                    button.btn.btn-default(data-dismiss="modal")="取消"
+                    button.btn.btn-primary.del_swipe(data-dismiss="modal")="确定"
+
+
+
+
+block footer
+    script(type="text/javascript" src="#{root_path}/static/js/lib/wangEditor.min.js")
+    script(type="text/javascript").
+        $(function () {
+            var num;//删除轮播的位置
+            var editor = new wangEditor('editor');
+            editor.config.uploadImgUrl = 'http://mobile.bjgzzr.com:7777';
+            editor.create();
+
+
+            //上传图片
+            $(".filechooser").on('change', function () {
+                var self = this;
+                var file = this.files[0];
+                // 接受 jpeg, jpg, png 类型的图片
+                if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+                if (Math.ceil(file.size / 1024 / 1024) > 5) {
+                    console.error('文件太大');
+                    return;
+                }
+                doUpload(self);//上传图片
+
+            });
+            function doUpload(self) {
+                var formData = new FormData($(".uploadimg")[0]);
+                $.ajax({
+                    url: "./upload",
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log(res);
+                        //返回图片url
+                        if (res.errno !== 0) {
+                            console.log('上传文件出错');
+                            return
+                        }
+                        var html = "<div class='swipe'>\
+                                        <div class='swipe_img'>\
+                                            <img src=" + res.data + ">\
+                                            <i class='issue_cancel icon iconfont icon-reduce'></i>\
+                                         </div>\
+                                    </div>";
+                        $(html).insertBefore('.swipe_add');
+
+                        //删除照片
+                        deleteImg();
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            function deleteImg() {
+                $('.issue_cancel').click(function () {
+                    $(this).parents('.swipe').remove();
+                    var src = $(this).prev('img').attr('src');
+                    console.log(src);
+                    $.ajax({
+                        url:'./remove',
+                        type:'POST',
+                        data:{src:src},
+                        success:function (res) {
+                            console.log(res)
+                        },
+                        error:function (err) {
+                            console.log(err);
+                        }
+                    });
+                });
+            }
+
+            //保存 添加轮播
+            $('.save').on('click',function () {
+                var text = editor.$txt.html(); // 获取编辑器区域完整html代码
+                var name = $('.swipe_title').val();//轮播标题
+                var location = $('select option:selected').val();//获取轮播位置
+                console.log(text, name, location);
+                $.ajax({
+                    url:'./addswipe',
+                    type:'POST',
+                    data:{text:text,name:name,location:location},
+                    success:function (res) {
+                        if(res.errno == 0){
+                            alert('添加成功');
+                            window.location.reload(true);
+                        } else {
+                            alert(res.errno);
+                        }
+                    },
+                    error:function () {
+                        alert('保存失败');
+                    }
+                });
+
+
+
+            });
+
+            //var ad = !{JSON.stringify(ads)};
+            //删除轮播
+            $('.issue_cancel').on('click',function () {
+                num = $(this).parent('.swipe').attr('location');
+                return num;
+
+            });
+            $('.del_swipe').on('click', function () {
+                $.ajax({
+                    url:'./delswipe',
+                    type:'POST',
+                    data:{num:num},
+                    success:function (res) {
+                        if(res.errno == 0){
+                            alert('删除成功');
+                            window.location.reload(true);
+                        } else {
+                            alert('删除失败' + res.reason);
+                        }
+                    },
+                    error:function () {
+                        alert('删除失败');
+                    }
+                })
+            });
+
+            //删除
+            $('.delete').on('click',function () {
+                // 清空内容。
+                editor.$txt.html('<p><br></p>');
+                $('.swipe_title').val('');
+            })
+
+
+        });

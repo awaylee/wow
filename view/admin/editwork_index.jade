@@ -1,0 +1,210 @@
+//
+   Created by Jeff on 2016/11/22.
+
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/admin/add.css")
+    link(rel="stylesheet" href="#{root_path}/static/css/admin/wangEditor.min.css")
+block content
+    .content
+        h3="编辑作品"
+        .describe
+            p
+                span="名称"
+                input#prod_name(type="text" value=work.name)
+            select#prod_status
+               - if(work.status == 1)
+                option(value="1")="状态：有效"
+                option(value="0")="状态：无效"
+               - else
+                option(value="0")="状态：无效"
+                option(value="1")="状态：有效"
+        .describe
+            p
+                span="初始化点赞"
+                input#init_likes(type="text" value=work.init_likes)
+        .describe
+            p
+            - if(work.is_sale)
+                span="是否可售"
+                input#sell(type="checkbox",checked)
+                label(for="sell")="可售"
+            - else
+                span="是否可售"
+                input#sell(type="checkbox")
+                label(for="sell")="可售"
+        .describe
+            p
+                span="销售价格"
+                input#price(type="text" value=work.price)
+        .describe
+            p
+                span="艺术家"
+                select#artist_id
+                    each art in arts
+                        option(value=art.artist_id)=art.artist_id+"-"+art.name
+        .describe
+            p
+                span="选择场地"
+                select#area_id
+                    each area in areas
+                        option(value=area.area_id)=area.area_id+'-'+area.name
+        .describe
+            span="相册"
+            form#imageform(enctype="multipart/form-data")
+                input#photochooser(type="file" name="photos" size="40")
+        .photo
+            each photo in work.photos
+                div.img.pic
+                    img(src=photo)
+                    span.close="X"
+        div.clear
+        div.editor
+            span.leftText="作品属性"
+            div#editor1
+                !{work.description}
+        div.editor
+            span.leftText="作品描述"
+            div#editor2
+                !{work.attribute}
+        .handle
+            span#save="保存并关闭"
+            span#cancel="取消"
+block footer
+    script(type="text/javascript" src="#{root_path}/static/js/lib/wangEditor.min.js")
+    script(type="text/javascript").
+        var editor1 = new wangEditor('editor1');
+        var editor2 = new wangEditor('editor2');
+        editor1.config.menus = $.map(wangEditor.config.menus, function (item, key) {
+            if (item === 'location') {
+                return null;
+            }
+            return item;
+        })
+        editor2.config.menus = $.map(wangEditor.config.menus, function(item, key) {
+            if (item === 'location') {
+             return null;
+        }
+         return item;
+        })
+        editor1.create();
+        editor2.create();
+        var photos = [];//相册列表
+        //添加相册
+        photochooser.onchange = function() {
+            var files = this.files;
+            var file = files[0];
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+                var result = this.result;
+                photos.push(result);
+                var imgs = '<div class="img pic"><img alt="banner" src='+result+'><span class="close">&times;</span></div>'
+                $(".photo").append(imgs);
+            };
+            reader.readAsDataURL(file);
+        };
+        //删除添加的图片
+        $(".photo .close").unbind('click').click(function () {
+            var index = $(this).parent('.img').index();
+            photos.splice(index, 1);
+            delete_img(index);
+            $(this).parent(".img").remove();
+            photochooser.value = '';
+        });
+        //保存
+        $("#save").on("click",function(){
+            var prodName = $("#prod_name").val();
+            var prodStatus = $("#prod_status").val();
+            var initLikes = $("#init_likes").val();
+            var isSale ;
+            var isSelected = $("#sell").prop("checked");
+            if (isSelected == true){
+                isSale = 1;
+            } else {
+                isSale = 0;
+            }
+            var price = $("#price").val();
+            var artistId = $("#artist_id").val();
+            var areaId = $("#area_id").val();
+            var attribute = editor1.$txt.html();
+            var description = editor2.$txt.html(); // 获取编辑器区域完整html代码
+            console.log(getData());
+            function getData() {
+                var json = {
+                    name:prodName,
+                    status:prodStatus,
+                    init_likes:initLikes,
+                    is_sale:isSale,
+                    price:price,
+                    artist_id:artistId,
+                    area_id:areaId,
+                    attribute:attribute,
+                    description:description
+                }
+                return json;
+            }
+            $.ajax({
+                type:"post",
+                url: "#{root_path}/admin/editwork/add",
+                contentType: "application/json; charset=utf-8",
+                data:JSON.stringify(getData()),
+                success:function(data){
+                    if(data.errno == 0){
+                        console.log('请求成功。正在跳转...');
+                        window.location.href = "#{root_path}/admin/workmanage"
+                    }
+                },
+                error:function(error){
+                    console.log(error);
+                }
+            });
+        });
+
+        //取消
+        $("#cancel").on("click",function(){
+            $("#prod_name").val("");
+            $("#prod_status").val(0);
+            $("#price").val("0");
+            $("#init_likes").val("");
+            $("#price").val("");
+            isSale = 1;
+            $("#attribute").val("");
+            $("#description").val("");
+            $(".img").remove();
+            photochooser.value = '';
+        });
+        function doUpload(self){
+            var parent = $(self)[0].parentNode;
+            var formData = new FormData($(parent)[0]);
+            $.ajax({
+                url: '#{root_path}/admin/editwork/upload',
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    console.log(res.data);
+                    flag = 1;
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }
+        function delete_img(index) {
+            $.ajax({
+                url: '#{root_path}/admin/editwork/deleteimg',
+                type: 'POST',
+                data: {index: index},
+                success: function (res) {
+                    console.log(res);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }

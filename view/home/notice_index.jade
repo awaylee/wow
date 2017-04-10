@@ -1,0 +1,53 @@
+//
+   Created by Jeff on 2016/12/22.
+extends layout
+
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+block content
+    header.bar.bar-nav
+        h1.title="通知"
+
+    nav.bar.bar-tab.bar_tab
+        a.tab-item.external(href="./home")
+            i.icon.iconfont.icon-shouye
+            span.tab-label
+                span="首页"
+        a.tab-item.external(href="./find")
+            i.icon.iconfont.icon-yanjing
+            span.tab-label
+                span="发现"
+        a#issue.tab-item.external.create-actions(href="javascript:;")
+            i.icon.iconfont.icon-jiahao1
+        a.tab-item.external.active(href="./notice")
+            i.icon.iconfont.icon-sixin
+            span.tab-label
+                span="通知"
+        a.tab-item.external(href="./me")
+            i.icon.iconfont.icon-yonghu
+            span.tab-label
+                span="我的"
+
+    div.content(style="background:#ffffff")
+        div.notice
+            ul
+                li.notice_li
+                    a(href="./notice/message")
+                        div.class-media1
+                            i.iconfont.icon-tongzhi2
+                        span.notice_text="消息"
+                li.notice_li
+                    a(href="./notice/private")
+                        div.class-media1
+                            i.iconfont.icon-sixin1
+                        span.notice_text="我的私信"
+                li.notice_li
+                    a(href="./notice/service")
+                        div.class-media1
+                            i.iconfont.icon-kefu
+                        span.notice_text="官方客服"
+
+block footer
+    script(type="text/javascript").
+

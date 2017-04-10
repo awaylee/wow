@@ -1,0 +1,147 @@
+extends layout
+block content
+    header.bar.bar-nav
+        h1.title=artist.name
+
+    .content
+        .card
+            .card-content
+                .card-content-inner
+                    .row(artist_id=artist.artist_id)
+                        .col-25
+                            img(src=artist.avatar_small width="100%" height='70px')
+                        .col-75
+                            h3.place-title=artist.name
+
+
+        .buttons-tab.buttons-fixed.posi_nav.posi_site
+            a.tab-link.button.active(href="#tab1")="介绍"
+            a.tab-link.button(href="#tab2")="相册/视频"
+            a.tab-link.button(href="#tab3")="相关展览"
+        .Top_h
+        .tabs.margin-10
+            #tab1.tab.active
+                .card
+                    .site_content(style="padding:5px;min-height:18rem")
+                        .text
+                            !{artist.intro}
+
+            #tab2.tab
+                .card
+                    .list-block
+                        ul.list-container
+                            each picture in artist.pictures
+                                li.artist_photos
+                                    img(src=picture.picture_small width="100%")
+                                    .tag_title=picture.name
+
+
+            #tab3.tab
+                each act in acts
+                    .card
+                        a(href="./site?act_id=#{act.act_id}")
+                            .card-header.exhibition-card-header
+                                img.card-cover(src=act.picture_small)
+                        .card-content
+                            .card-content-inner
+                                .area_title.clearfix
+                                    span.pull-left=act.name
+                                    span.color-gray.pull-right
+                                        i.icon.iconfont.icon-zuobiao
+                                        span.padding-l=act.distance + "米"
+                                .area_name.color-gray
+                                    span="发起人：" + act.sponsor_name
+                //.card
+                //    a(href="./site")
+                //        .card-header.exhibition-card-header
+                //            img(src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1486469814735&di=9e099eb451fa4338c2133fb60411d65c&imgtype=0&src=http%3A%2F%2Fimgbdb2.bendibao.com%2Fbeijing%2F201311%2F29%2F2013112994757494.jpg")
+                //        .card-content(style="padding:5px 10px")
+                //            .area_title.clearfix
+                //                span.pull-left="北京文化馆"
+                //                span.pull-right="1000米"
+                //            .text.color-gray
+                //                span.p_name="发起人："
+                    //div.card
+                    //    div.card-content: div.card-content-inner
+                    //        .row.relative.artist-content-padded
+                    //            a.full(href="./exhibition?act_id=")
+                    //            div.col-33
+                    //                img.areaImg(src="#{root_path}/static/images/find.jpg" width="100%")
+                    //            div.col-66
+                    //                div.text
+                    //                    h1=""
+                    //                div.text
+                    //                    span="时间："
+                    //                    span.time=""
+                    //                div.text
+                    //                    span="场馆："
+                    //                    span(filed="adress")=""
+                    //                div.tag-group
+                                    //div.place-icon.artist-place-icon
+                                    //    svg.icon(aria-hidden="true")
+                                    //        use(xlink:href="#icon-guanzhu")
+                                    //    span(filed="concern")=actInfo.views
+                                    //    span="  "
+                                    //    svg.icon(aria-hidden="true")
+                                    //        use(xlink:href="#icon-zan")
+                                    //    span(filed="like")=actInfo.likes
+                                    //- var d = new Date();
+                                    //- var year = d.getFullYear();
+                                    //- var month = (d.getMonth() + 1) < 10 ? ('0'+ d.getMonth() + 1) : (d.getMonth() + 1);
+                                    //- var day = d.getDate() < 10 ? ('0'+ d.getDate()) : (d.getDate());
+                                    //- var now = year+"."+ month +"."+ day;
+                                    //- now = now.replace(/[^0-9]/g,'');
+                                    //- var endTime = actInfo.end_time.replace(/[^0-9]/g,'');
+                                    //if(endTime < now)
+                                    //    div.endTag
+                                    //        svg.icon(aria-hidden="true")
+                                    //            use(xlink:href="#icon-jieshu")
+block footer
+    script(type="text/javascript").
+        $('.concern').click(function(){
+            var text = $(this).children()[0].innerHTML;
+            var self = $(this).children()[0];
+            var fansnum = $('.fans-num')[0].innerText;
+            fansnum = fansnum - 0;
+            $.ajax({
+                url:'#{root_path}/home/artist/concern',
+                type:'POST',
+                data:{text: text},
+                success:function(res){
+                    if (res.errno == "0") {
+                        if (res.data == '添加关注成功') {
+                            self.innerHTML = "已关注";
+                            $('.fans-num')[0].innerHTML = fansnum + 1;
+                            console.log('添加关注成功');
+                        }
+                        else {
+                            self.innerHTML = "+关注";
+                            $('.fans-num')[0].innerHTML = fansnum - 1;
+                                console.log('取消关注成功');
+                            }
+                        }
+                    else{
+                        console.log('添加关注失败');
+                    }
+                },
+                error:function(err){
+                    console.log(err);
+                }
+            })
+        });
+        //播放视频
+        var play = false;
+        document.addEventListener('click', function (event) {
+            if (event.srcElement.tagName == 'VIDEO') {
+                if (!play) {
+                    event.srcElement.previousSibling.style.display = 'none';
+                    event.srcElement.play();
+                    play = !play;
+                }
+                else {
+                    event.srcElement.previousSibling.style.display = 'block';
+                    event.srcElement.pause();
+                    play = !play;
+                }
+            }
+        }, false);

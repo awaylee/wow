@@ -1,0 +1,200 @@
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+extends ./common/sidebar
+block main
+    table
+    //.table_box
+    //    table.table.table-bordered
+    //        thead
+    //            tr
+    //                td="序号"
+    //                td="举报"
+    //                td="状态"
+    //        tbody
+    //            tr
+    //                td="1"
+    //                td.report="侮辱他人"
+    //                td="已处理"
+    //            tr
+    //                td="2"
+    //                td.report="非法信息"
+    //                td="待处理"
+    //.hide_info
+    //    .table_box
+    //        table.table.table-bordered
+    //            tr
+    //                td.choose="选择"
+    //                td="内容"
+    //                td="类型"
+    //            tr
+    //                td.choose
+    //                    input.check(type="checkbox")
+    //                td="嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻嘻"
+    //                td="不合法"
+    //        .foot
+    //            button.save.btn.btn-primary="保存"
+    //            button.delete.btn.btn-danger="删除"
+
+    #myModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel")
+        .modal-dialog.modal-sm(role="document")
+            .modal-content
+                .modal-header
+                    button.close(data-dismiss="modal" aria-label="Close")
+                        span(aria-hidden="true")
+                            | &times;
+                    h4.modal-title="是否删除该条举报"
+                .modal-body
+                    .row
+                        .col-xs-4="举报原因"
+                        .col-xs-8.reason
+                .modal-footer
+                    button.btn.btn-danger.delete(data-dismiss="modal")="删除"
+                    button.btn.btn-primary(data-dismiss="modal")="取消"
+
+        //.recomment_con
+        //    .reply_text
+        //    .textarea
+        //        textarea.re_textarea
+        //    .btns.clearfix
+        //        button.send.fr.btn.btn-primary="发送"
+        //        button.packup.fr.btn.btn-success(data-dismiss="modal" aria-label="Close")="收起"
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            $("table").bootstrapTable({
+                toolbar: ".toolbar",
+                columns: [
+                    {
+                        title: "举报序号",
+                        field: "inform_id",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "举报原因",
+                        field: "reason",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "举报用户ID",
+                        field: "author_id",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "举报类型",
+                        field: "type",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "举报作品/文章",
+                        field: "target_id",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "举报时间	",
+                        field: "create_time",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            return Date.format(new Date(value * 1000), "yyyy-MM-dd  hh:mm:ss");
+                        }
+                    },
+                    {
+                        title: "处理状态",
+                        field: "status",
+                        align: "center",
+                        valign: "middle",
+                        width: 80,
+                        formatter: function (value, row, index) {
+                            if (value == 0) {
+                                return "<span style='color:#20A0FF'>待处理</span>"
+                            } else {
+                                return "<span>已处理</span>"
+                            }
+                        }
+                    },
+                    {
+                        title: "操作",
+                        field: "user_id",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                           if(row.status == 0){
+                               return "<button class='btn btn-danger' data-target='#myModal' data-toggle='modal'>删除 </button>";
+                           }
+                            if (row.status == 1) {
+                                return "<button class='btn' data-target='#myModal' disabled='disabled' data-toggle='modal'>已处理</button>";
+                            }
+                        }
+                    },
+
+                ],
+                striped: true,
+                cache: false,
+                search: false,
+                sortable: true,
+                sortName: 'inform_id',
+                sortOrder: 'asc',
+                sidePagination: "server",
+                showRefresh: false,
+                showToggle: true,
+                showColumns: true,
+                pagination: true,
+                smartDisplay: true,
+                paginationLoop: false,
+                pageList: '[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 20,
+                pageNumber: 1,
+                totalField: "total",
+                dataField: "rows",
+                pageIndex: "page-index",
+                onLoadSuccess: function (data) {
+                    //console.log(data);
+                    return data.data;
+                },
+                queryParams: function (params) {
+                    //console.log(params);
+                    return params;
+                },
+                onClickCell: function (fild, value, row, $element) {
+                    //console.log(row);
+                    var status = row.status;
+                    var reason = row.reason;
+                    var inform_id = row.inform_id;
+                    $('.reason').attr("inform_id", inform_id).text(reason);
+                },
+                method: 'post',
+                contentType: "application/x-www-form-urlencoded",
+                url: './reportdata'
+            });
+
+            //删除举报
+            $('.delete').on('click',function () {
+                var inform_id = $('.reason').attr("inform_id");
+                $.ajax({
+                    url: "./delete",
+                    type: 'POST',
+                    data: {"inform_id": inform_id},
+                    success: function (res) {
+                        alert("删除成功");
+                        window.location.reload();
+                    },
+                    error: function (res) {
+                        alert("删除失败", res);
+                    }
+                })
+            });
+
+
+        });
+
+

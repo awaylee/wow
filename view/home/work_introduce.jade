@@ -1,0 +1,318 @@
+extends layout
+
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/issue.css")
+
+block content
+    header.bar.bar-nav
+        button.posi_left.color-gray(onclick="self.location=document.referrer;")="取消"
+        h1.title="发布作品"
+        button.posi_right.color-gray#introduce(disabled="true")="发布"
+
+    .content
+        .card
+            .card_box
+                input.work_title(maxlength="32", type="text" ,placeholder="输入作品名称")
+            .margin_2
+                .row
+                    .col-33.add_col
+                        .issue_pic_tip.issue_pic
+                            i.icon.iconfont.icon-jia1
+                            form#uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100px; z-index:99;")
+                                input#filechooser(type="file" name="mood_img" capture="camera" accept="image/*" style="height:100px; width:100%;")
+                        //.sale_state
+                            span.is_sale.active="可售"
+                            span.no_sale="非卖品"
+                .row.issue_pic_con
+                    //上传照片后的样式
+                    //.col-50
+                        .issue_pic
+                            span.issue_cancel
+                                | &times;
+                            img
+
+        .list-block.contacts-block
+            .list-group
+                ul
+                    //li.item-content
+                        .item-inner
+                            .item-title.item_title
+                                span="作品类型"
+                                input.work_type(type="text" readonly='readonly')
+                            i.icon.iconfont.icon-xiangxia2
+                    //.hide_item
+                        ul
+                            li="水彩画"
+                            li="水粉画"
+                            li="油画"
+                    li.item-content
+                        .item-inner
+                            .item-title.item_title
+                                span="作品规格"
+                                input.work_norms(type="text" disabled='true')
+                            i.icon.iconfont.icon-xiangxia2
+                    .hide_item
+                        div
+                            span="cm"
+                            input.work_width(type="number")
+                            span="宽"
+                            span="*"
+                            input.work_length(type="number")
+                            span="长"
+
+                    li.item-content
+                        .item-inner
+                            .item-title.item_title
+                                span="创作日期"
+                                input.work_date(type="text" disabled='true')
+                            i.icon.iconfont.icon-xiangxia2
+                    .hide_item
+                        div
+                            span="月"
+                            input.work_month(type="number")
+                            span="年"
+                            input.work_year(type="number")
+
+                    li.item-content
+                        .item-inner
+                            .item-title.item_title
+                                span="可售状态"
+                                input.work_status(verify='1' type="text" disabled='true' value='可售')
+                            i.icon.iconfont.icon-xiangxia2
+                    .hide_item
+                        div.sale_status
+                            span.no_sale('sale_status'="0")="非卖品"
+                            span.is_sale.active('sale_status'="1")="可售"
+
+                    li.item-content.item_price
+                        .item-inner
+                            .item-title.item_title
+                                span="售卖价格"
+                                input.work_sale(type="text" disabled='true' verify='2')
+                            i.icon.iconfont.icon-xiangxia2
+                    .hide_item
+                        div(style="padding-left:8rem")
+                            span="元"
+                            input.work_price(type="number")
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            //初始化
+            var is_sale;//可售状态
+            var title; //作品名称
+            var pictures = [];//图片列表
+            var price;//价格
+            var type;//作品类型;
+            var size_x;//长
+            var size_y;//宽
+            var create_time;
+            var create_year;//创作年份
+            var create_month;//创作月份
+
+
+            //下拉列表
+            $(".item-content").on('click', function () {
+                if ($(this).find('i').hasClass("icon-xiangxia2")) {
+                    $(this).find('i').addClass('icon-arrows-down').removeClass('icon-xiangxia2').end().next('.hide_item').slideDown("slow");
+                } else if ($(this).find('i').hasClass("icon-arrows-down")) {
+                    $(this).find('i').addClass('icon-xiangxia2').removeClass('icon-arrows-down').end().next('.hide_item').slideUp("slow");
+                }
+            });
+            //可售状态
+            $('.sale_status>span').on('click', function () {
+                $('.work_status').val($(this).text()).change();
+                $(this).addClass('active').siblings('span').removeClass('active');
+                $(this).parents('.hide_item').slideUp("slow").prev('li').find('i').addClass('icon-xiangxia2').removeClass('icon-arrows-down');
+                if($('.is_sale').hasClass('active')){
+                    is_sale = 1;
+                    $('.work_price').removeAttr('disabled').css('background','#fff');
+                } else {
+                    is_sale = 0;
+                    $('.work_price').attr('disabled','false').css('background','#f6f0f0').val('');
+                    $('.work_sale').val('');
+                }
+            });
+            //作品类型
+            /*$('.hide_item li').on('click', function () {
+                type = $(this).text();
+                $(this).addClass('active').siblings('li').removeClass('active');
+                $('.work_type').val(type);
+                $(this).parents('.hide_item').slideUp("slow").prev('li').find('i').addClass('icon-xiangxia2').removeClass('icon-arrows-down');
+            });*/
+            //作品规格
+            $('.work_width').on('blur', function () {
+                size_x = $('.work_length').val();
+                size_y = $(this).val();
+                if (size_x != "" && size_y != "") {
+                    $('.work_norms').val(size_x + '*' + size_y + 'cm');
+                    $(this).parents('.hide_item').slideUp("slow").prev('li').find('i').addClass('icon-xiangxia2').removeClass('icon-arrows-down');
+                }
+            });
+            //创作日期
+            $('.work_month').on('blur', function () {
+                var year = $('.work_year').val();
+                var month = $(this).val();
+                if (year != "" && month != "") {
+                    $('.work_date').val(year + '年' + month + '月');
+                    $(this).parents('.hide_item').slideUp("slow").prev('li').find('i').addClass('icon-xiangxia2').removeClass('icon-arrows-down');
+                }
+            });
+            //售卖价格
+            $('.work_price').on('blur', function () {
+                price = $(this).val();
+                if (price != "") {
+                    $('.work_sale').val(price + '元');
+                    $(this).parents('.hide_item').slideUp("slow").prev('li').find('i').addClass('icon-xiangxia2').removeClass('icon-arrows-down');
+                }
+            });
+
+            //上传图片
+            $("#filechooser").on('change', function () {
+                var file = this.files[0];
+                // 接受 jpeg, jpg, png 类型的图片
+                if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+                if (Math.ceil(file.size / 1024 / 1024) > 5) {
+                    console.error('文件太大');
+                    return;
+                }
+                doUpload();//上传图片
+            });
+            function doUpload() {
+                var formData = new FormData($("#uploadimg")[0]);
+                $.showPreloader('上传中...');
+                $.ajax({
+                    url: "./upload",
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log(res);
+                        //返回图片url
+                        if (res.errno !== 0) {
+                            console.log('上传文件出错');
+                            return
+                        }
+                        var html = "<div class='col-33'>\
+                                        <div class='issue_pic'>\
+                                            <img src=" + res.data + ">\
+                                            <span class='issue_cancel icon iconfont icon-reduce'></span>\
+                                        </div>\
+                                    </div>";
+                        var item = $(html);
+                        $.hidePreloader();
+                        // 绑定删除行为
+                        item.find("span").click(deleteImg);
+                        $(item).insertBefore(".add_col");
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        $.alert('图片上传失败');
+                    }
+                });
+            }
+
+            function deleteImg() {
+                $(this).parents('.col-33').remove();
+                var src = $(this).prev('img').attr('src');
+                console.log(src);
+                $.ajax({
+                    url: './remove',
+                    type: 'POST',
+                    data: {src: src},
+                    success: function (res) {
+                        console.log(res)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            //可售与非卖品
+            $(".sale_state > span").on('click', function () {
+                if ($(this).hasClass('active')) {
+                    $(this).removeClass('active').siblings('span').addClass('active');
+                } else {
+                    $(this).addClass('active').siblings('span').removeClass('active');
+                }
+            });
+
+            //判断用户输入情况
+            $("input").on('change',function () {
+                var title = $('.work_title').val().length;
+                var pic = $('img').length;
+                var length = $('.work_length').val().length;
+                var width = $('.work_width').val().length;
+                var year = $('.work_year').val().length;
+                var month = $('.work_month').val().length;
+                var status = $('.work_status').val();
+                var price = $('.work_price').val().length;
+                console.log(title,pic,length,width,year,month,status,price);
+                if(title>0 && pic>0 && length>0 && width>0 && year>0 && month>0){
+                    console.log(1);
+                    if(status=="可售"  && price>0 ){
+                        console.log(2);
+                        $("#introduce").addClass("useable").removeAttr('disabled');
+                    }
+                    else if(status=="非卖品" && price == 0){
+                        $("#introduce").addClass("useable").removeAttr('disabled');
+                        console.log(3)
+                    } else {
+                        $("#introduce").removeClass("useable");
+                    }
+                } else {
+                    $("#introduce").removeClass("useable");
+                }
+            });
+
+
+            //判断发布或者取消的执行情况
+            $("#introduce").on("click", function () {
+                console.log(1);
+                if (!$(this).hasClass("useable")) {
+                    $.alert("请完善作品信息");
+                }
+                else {
+                    title = $(".work_title").val();
+                    if ($('.is_sale').hasClass('active')){
+                        is_sale = 1;
+                    } else {
+                        is_sale = 0;
+                    }
+                    create_time = $('.work_date').val();
+                    create_year = $('.work_year').val();
+                    create_month = $('.work_month').val();
+                    console.log(title,is_sale,size_x,size_y,create_year,create_month,price);
+                    $.showPreloader('发布中...');
+                    $.ajax({
+                        url: './publish',
+                        type: 'POST',
+                        data: {title: title, is_sale:is_sale, size_x: size_x, size_y:size_y, create_year: create_year, create_month:create_month, price: price},
+                        success: function (res) {
+                            $.hidePreloader();
+                            if (res.errno == "0") {
+                                $.alert("发布成功",function () {
+                                    window.location.href = "#{root_path}/home/newwork"
+                                });
+
+                            }
+                            else {
+                                console.log('添加关注失败');
+                            }
+                        },
+                        error: function (err) {
+                            $.alert("发布失败");
+                            console.log(err);
+                        }
+                    })
+                }
+            });
+
+
+
+        });
+

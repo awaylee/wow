@@ -1,0 +1,56 @@
+//
+   Created by workspace on 2016/12/30.
+extends layout
+
+block content
+    div.content
+      each like in likelist
+        div.card: div.card-content: div.card-content-inner
+            div.row.concern
+                a(href="../personal?author_id=#{like.author_id}")
+                    div.col-66
+                        img.head_img(src=like.avatar width="50px" height="50px")
+                        span.artist_name=like.name
+                div.col-33.private_concern(author_id = "#{like.author_id}")
+                  if(like.is_follow)
+                    div.isconcern.button.is_atten
+                        span="已关注"
+                  else
+                    div.isconcern.button.no_atten
+                        span="+关注"
+block footer
+    script(type="text/javascript").
+        $('.isconcern').click(function(){
+            var text = $(this).children().html();
+            var self = $(this).children()[0];
+            var author_id = $(this).parent().attr("author_id");
+            if($(this).hasClass('is_atten')){
+                $(this).removeClass('is_atten');
+            } else {
+                $(this).addClass('is_atten');
+            }
+            $.ajax({
+                url:'../work/addconcern',
+                type:'POST',
+                data:{text: text, author_id: author_id},
+                success:function(res){
+                    console.log(res);
+                    if (res.errno == "0") {
+                        if (res.data == '添加关注成功') {
+                            self.innerHTML = "已关注";
+                            console.log('添加关注成功');
+                        }
+                        else {
+                            self.innerHTML = "+关注";
+                            console.log('取消关注成功');
+                        }
+                    }
+                    else{
+                        console.log('添加关注失败');
+                    }
+                },
+                error:function(err){
+                    console.log(err);
+                }
+            })
+        });

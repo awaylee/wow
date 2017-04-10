@@ -1,0 +1,75 @@
+extends layout
+
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+block content
+    header.bar.bar-nav
+        h1.title='展览详情'
+    nav.bar.bar-tab.external
+        a.tab-item.external(href="javascript:;")
+            span.tab-label.apply="提交申请"
+
+    div.content(work_id = 111)
+        .card
+            .card-header.exhibition_head="库布里克咖啡书店"
+            .card-content
+                .card-content-inner
+                    .text.exhibition_detail
+                        .text
+                            span="时间："
+                            span.small-text.gray="2017年03月02日-2017年06月30日"
+                        .text
+                            span="地址："
+                            span.small-text.gray="海淀区东城区北京外国语学院南门棉花胡同7号"
+                        .text
+                            span="截止日期："
+                            span.small-text.gray="2017年06月15日"
+                        .exhibition_check
+                            input#choice(type="checkbox")
+                            label(for="choice")="100"+"积分"
+                            .exhibition_tips
+                                span="若没有成功参展，积分会在1-3个工作日内返还您的账户中。"
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            $('#choice').on('change',function () {
+                var self = this;
+                var value = $(this).prop("checked");
+                //积分不足时
+                /*if(value){
+                    $.alert('抱歉，您的积分不足。',function () {
+                        $(self).prop("checked",false)
+                    });
+                }*/
+                //积分足够时
+                if(value){
+                    $('.external').addClass('exhibition_active');
+                    if ($('.external').hasClass('exhibition_active')){
+                        $('.apply').on('click',function () {
+                            $.ajax({
+                                url:'./exdetail/apply',
+                                type:'POST',
+                                data:{act_id:'111'},
+                                success:function () {
+                                    $.alert('您已成功申请参展，请尽快致电010-00000000确认参展详情。', function () {
+                                        $('.apply').text('已申请');
+                                        window.location.href = "./site";
+                                    })
+                                },
+                                error:function () {
+                                    $.alert('申请失败');
+                                }
+                            });
+
+                        })
+                    }
+                } else {
+                    $('.external').removeClass('exhibition_active');
+                }
+
+            });
+
+
+        });
+

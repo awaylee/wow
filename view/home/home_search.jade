@@ -1,0 +1,27 @@
+//
+   Created by Jeff on 2017/1/6.
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+block content
+    header.bar.bar-nav
+        h1.title="搜索结果"
+    div.content
+        div.card-header.block_header="作品搜索结果"
+        each work in results.works
+            a(href="../work?work_id=#{work.work_id}")
+                .card.no-margin-d.search_card
+                    .card-header.color-white.no-border.no-padding(valign="bottom")
+                        img.card-cover.card_cover(src=work.picture height="180px")
+                    .card-content
+                        .card-content-inner
+                            .work_name=work.name
+        div.card-header.block_header="作者搜索结果"
+        each author in results.authors
+            div.card.search_card
+                div.card-content
+                    .facebook-card
+                        a(href="../personal?author_id=#{author.author_id}")
+                            .facebook-avatar.facebook_avatar
+                                img.index_img(src=author.avatar)
+                        .facebook-name=author.name

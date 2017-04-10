@@ -1,0 +1,84 @@
+extends layout
+
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+block content
+    header.bar.bar-nav
+        h1.title="我的"
+    nav.bar.bar-tab.bar_tab
+        a.tab-item.external(href="./home")
+            i.icon.iconfont.icon-shouye
+            span.tab-label
+                span="首页"
+        a.tab-item.external(href="./find")
+            i.icon.iconfont.icon-yanjing
+            span.tab-label
+                span="发现"
+        a#issue.tab-item.external.create-actions(href="javascript:;")
+            i.icon.iconfont.icon-jiahao1
+        a.tab-item.external(href="./notice")
+            i.icon.iconfont.icon-sixin
+            span.tab-label
+                span="通知"
+        a.tab-item.external.active(href="./me")
+            i.icon.iconfont.icon-yonghu
+            span.tab-label
+                span="我的"
+
+
+    div.content
+        div.card: div.card-content: div.card-content-inner.head_info
+            img.head_img(src=info.avatar width="100px" height="100px")
+            div.text
+                span=info.name
+            div.text
+                span="ID: "+ info.sys_user_id
+        div.card: div.card-content: div.list-block: ul
+            li: a(href="./me/order").item-link.item-content
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner
+                    div.item: span="我的订单"
+            li: a(href="./me/concern").item-link.item-content
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner
+                    div.item: span="我关注的"
+            li: a(href="./me/introduce").item-link.item-content
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner
+                    div.item: span="我发布的"
+            li: a(href="./me/sale").item-link.item-content
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner
+                    div.item: span="在线销售申请"
+            li: a(href="./me/setting").item-link.item-content
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner
+                    div.item: span="设置"
+block footer
+    script(type="text/javascript").
+        //$('.tags').click(function () {
+        //    console.log(1);
+        //    var add = true;
+        //    var label_id = $(this).attr("tid");
+        //    var self = this;
+        //    if($(this).hasClass('label_active')){
+        //        add = false;
+        //    }
+        //    $.ajax({
+        //        url: '#{root_path}/home/me/addlabel',
+        //        type: 'POST',
+        //        data: {add: add,label_id:label_id},
+        //        success: function (res) {
+        //            if(res.errno == "0"){
+        //                add ? $(self).addClass('label_active') : $(self).removeClass('label_active');
+        //            }
+        //            else{
+        //                console.log('添加标签失败');
+        //            }
+        //        },
+        //        error: function (err) {
+        //            console.log(err);
+        //        }
+        //    })
+        //});

@@ -1,0 +1,68 @@
+//
+   Created by liwei on 2016/12/30.
+extends layout
+
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+block content
+    header.bar.bar-nav
+        h1.title="我的订单"
+        .top_h
+        .buttons-tab.buttons-fixed.posi_nav.order_nav
+            a.tab-link.active.button(href="#tab1")="我购买的"
+            a.tab-link.button.getsale(href="#tab2")="我出售的"
+    nav.bar.bar-tab
+        a.tab-item.external.external_active(href="./sale")
+            span.tab-label.whiteColor="在线销售申请"
+
+    .content
+        .Top_h
+        .order_con
+            .tabs
+                #tab1.tab.active
+                    if(orders.length == 0)
+                        .order_tips.text-center
+                            span="暂无购买信息"
+                    else
+                        each order in orders
+                            .card(order_id= order.order_id)
+                                .card-content
+                                    .card-content-inner(work_id = order.work_id)
+                                        h5=order.name
+                                        .order
+                                            span.left=order.size
+                                            span.right
+                                                span="¥"
+                                                span=order.price
+
+
+
+                #tab2.tab
+                    if(sales.length == 0)
+                        .order_tips.text-center
+                            span="暂无购买信息"
+                    else
+                        each sale in sales
+                            .card(order_id= sale.order_id)
+                                .card-content
+                                    .card-content-inner(work_id = sale.work_id)
+                                        h5=sale.name
+                                        .order
+                                            span.left=sale.size
+                                            span.right
+                                                span="¥"
+                                                span=sale.price
+block footer
+    script(type="text/javascript").
+        //获取更多出售订单
+        //$.ajax({
+        //    url: './getsale',
+        //    type: 'POST',
+        //    success: function (res) {
+        //       console.log(res)
+        //    },
+        //   error: function (res) {
+        //       console.log(res)
+        //    }
+        //});

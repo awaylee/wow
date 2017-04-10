@@ -1,0 +1,66 @@
+//
+   Created by liwei on 2016/11/28.
+extends layout
+block head
+block content
+    body.login_content
+    .content
+        .login_header
+            .person_img
+                if(userinfo)
+                    img(src=userinfo.headimgurl width="100%")
+
+        .card
+            .row.rowBox
+                .col-25="账号："
+                .col-75
+                    if(userinfo)
+                        input.username(type="text" value=userinfo.nickname)
+                    else
+                        input.username(type="text")
+            .row.rowBox
+                .col-25="密码："
+                .col-75
+                    if(userinfo)
+                        input.password(type="password" value="11111111111")
+                    else
+                        input.password(type="password" value="")
+        .card
+            .card-content
+                p.content-block
+                    span.button.button-big.login_btn="登 录"
+        .card
+            .tips
+                //a(href="javascript:;")="注册"
+                //| &nbsp;&nbsp; | &nbsp;&nbsp;
+                a(href="javascript:;")="忘记密码"
+block footer
+    script(type="text/javascript").
+        $('.login_btn').click(function(){
+            var username = $('.username').val();
+            var password = $('.password').val();
+            function getData() {
+                var json ={
+                    'username':username,
+                    'passwd':password
+                };
+                return json;
+            }
+            if(username == '' ||　password == ''){
+                alert('请输入正确的用户名和密码');
+                return
+            }
+            $.ajax({
+                type:'POST',
+                url:'#{root_path}/home/login/verifi',
+                contentType: "application/json; charset=utf-8",
+                data:JSON.stringify(getData()),
+                success: function(data){
+                    window.location.href="https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx2b5917ae22acdb3d&redirect_uri=http://mobile.bjgzzr.com/&response_type=code&scope=snsapi_userinfo&state=001#wechat_redirect ";
+                },
+                error: function(err){
+                    console.log(err);
+                }
+            })
+        });
+

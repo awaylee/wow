@@ -1,0 +1,185 @@
+button{
+    cursor: pointer;
+}
+.container{
+    overflow: auto;
+    zoom: 1;
+}
+
+.margin-4r{
+    margin-right: 20px;
+}
+.margin-6r{
+    margin-right: 40px;
+}
+.margin-6t{
+    margin-top: 60px;
+}
+/*.C_wrap .header .title{
+    height:76px;
+    border-bottom: 1px solid #000;
+    position: relative;
+}
+.C_wrap .header .title h3{
+    line-height: 76px;
+    font-size: 32px;
+    font-weight: 700;
+    padding-left: 36px;
+    color:#333333;
+    position: absolute;
+    left: 0;
+    top:0;
+}
+.C_wrap .header .title div{
+    height: 20px;
+    font-size: 14px;
+    padding:4px 10px;
+    position: absolute;
+    bottom: 0;
+    right:0;
+}
+.C_wrap .header .title div a{
+    font-weight: 700;
+}
+.C_wrap .header .title div .exit{
+    text-decoration: underline;
+}
+.C_wrap .header .list{
+    height:30px;
+}
+.C_wrap .header .list ul{
+    overflow: hidden;
+}
+.C_wrap .header .list ul li{
+    float: left;
+    width: 114px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    border-right: 1px solid #333333;
+}*/
+.C_wrap .table{
+    /*margin:10px;*/
+}
+.C_wrap .table .seek{
+    padding:5px;
+    border:1px solid #333333;
+}
+.seek .user, .seek .regitime, .seek .searchBtn, .seek ._search{
+    padding: 5px;
+    height: 25px;
+    line-height: 25px;
+    font-size: 16px;
+}
+.searchBar{
+    width: 400px;
+    float: left;
+}
+.status{
+    width: 50px;
+    float: left;
+}
+.searchBtn p{
+    float: left;
+}
+.C_wrap .table .seek div p .txt{
+    width: 110px;
+}
+.C_wrap .table .seek div p span{
+    padding-right: 10px;
+}
+.C_wrap .table .seek div p input{
+    height: 21px;
+    width:170px;
+}
+.C_wrap .table .seek div p select{
+    height: 21px;
+    width: 90px;
+}
+.C_wrap .table .seek div .search{
+    margin-left: 80px;
+    width: 70px;
+    height: 23px;
+    text-align: center;
+    line-height: 23px;
+    font-size: 16px;
+    cursor: pointer;
+    border:1px solid #333333;
+    border-radius:5px;
+}
+.C_wrap .table .seek div a{
+    color: #333333;
+    padding-left: 10px;
+}
+
+.C_wrap .table .thead{
+    height: 40px;
+    line-height: 40px;
+}
+.C_wrap .table .thead ul{
+    float: right;
+}
+.C_wrap .table .thead ul li{
+    float: left;
+    padding:0 18px;
+    height: 20px;
+    font-size: 13px;
+    text-align: center;
+    line-height: 20px;
+    border: 1px solid #333333;
+    margin:9px 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.C_wrap .table table{
+    width: 100%;
+ }
+.C_wrap .table table td{
+    border: 1px solid #333333;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+}
+/*新增，编辑 new_add*/
+.C_wrap .zoom{
+    width: 90%;
+    height: 300px;
+    position: absolute;
+    left: 50%;
+    top:50%;
+    margin-left: -45%;
+    margin-top:-150px;
+    background: rgba(0,0,0,.5);
+    z-index: 999;
+}
+.C_wrap .zoom .new_add{
+    width: 90%;
+    margin:0 auto;
+
+}
+.header-nav a{
+    display: block;
+    width: 100%;
+}
+.tdimg{
+    width: 50px;
+    vertical-align: middle;
+    padding: 5px 0;
+}
+.preview-container{
+    width: 380px;
+    height: 900px;
+    padding: 0 15px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    background-image: url(../../images/phone.png);
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+.demo-page {
+    margin-top: 100px;
+    width: 100%;
+    height: 600px;
+    background-color: #fff;
+}

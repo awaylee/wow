@@ -1,0 +1,178 @@
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+
+block content
+    header.bar.bar-nav
+        h1.title="展览详情"
+    .content(act_id = act.act_id)
+        .card
+            .card-header.color-white.no-border.no-padding.col-33(valign="bottom" style="height:180px")
+                img.card-cover.card_cover.card_cover_s(src=act.picture_small)
+            .card-content
+                .padding-tb
+                    .area_title(style="text-indent:10px")
+                        span=act.name
+        .card
+            ul.site_content.list-block
+                li.item-content: .item-inner
+                    .item-title=act.time
+                li.item-content: .item-inner
+                    .item-title="场馆："+act.area.area_name
+                a(href="#{root_path}/home/notice/service")
+                    li.item-content.item-link: .item-inner
+                        .item-title="艺术WOW客服"
+        .card
+            .block_header.t_title
+                i.iconfont.icon-huixingzhen.hot
+                span.red="展览场地"
+            .card-content.padding-tb
+                a.row(href="./map" addr_lo=act.area.addr_lo addr_la=act.area.addr_la)
+                    .col-20
+                        img(width="100%" height="55px" src=act.area.picture_small)
+                    .col-80.relative
+                        h4=act.area.area_name
+                        p.ellipsis.margin-top.font2=act.area.addr_name
+                        i.iconfont.icon-more.posi_r
+        .card
+            .block_header.t_title
+                i.iconfont.icon-huixingzhen.hot
+                span.red="参与大咖"
+            .card-content.padding-tb
+              each artist in act.artists
+                a(href="./artist?artist_id=#{artist.artist_id}")
+                    .row.border_b(style="margin:5px 0")
+                        .col-20
+                            img(width="100%" height="55px" src=artist.avatar_small)
+                        .col-80.relative
+                            h4=artist.name
+                            p.ellipsis.margin-top.font2=artist.intro
+                            i.iconfont.icon-more.posi_r
+        .card
+            .block_header.t_title
+                i.iconfont.icon-huixingzhen.hot
+                span.red="主要作品"
+            .card-content.padding-tb
+                ul.list-container
+                  each work in act.works
+                    li.exhibition_photos.relative
+                        img.exhibition_img(src=work.picture_small width="100%")
+                        .tag
+                            span="可售"
+                        .tag_title=work.name
+
+        .card
+            .block_header.t_title
+                i.iconfont.icon-huixingzhen.hot
+                span.red="展览详情"
+            .card-content.padding-tb
+                .site_content(style="padding:5px")
+                    .text
+                        !{act.detail}
+    .popup.popup-img.relative
+        .content-block
+            img.dimension_big_img(src="" width="100%")
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            //点击图片放大
+            $(".exhibition_img").click(function () {
+                $(".dimension_big_img")[0].src = $(this)[0].src;
+                $.popup('.popup-img');
+            });
+            $(".dimension_big_img").click(function () {
+                $.closeModal('.popup-img');
+            });
+
+            $('.isconcern').on('click',function () {
+                var text = $(this).children().html();
+                var self = $(this).children()[0];
+                if ($(self).hasClass('is_atten')) {
+                    $(self).removeClass('is_atten');
+                    self.innerHTML = "+关注";
+                } else {
+                    $(self).addClass('is_atten');
+                    self.innerHTML = "已关注";
+                }
+                //添加关注
+                $.ajax({
+                    url: './personal/addconcern',
+                    type: 'POST',
+                    data: {text: text},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            if (res.data == '添加关注成功') {
+                                self.innerHTML = "已关注";
+                                console.log('添加关注成功');
+                            }
+                            else {
+                                self.innerHTML = "+关注";
+                                console.log('取消关注成功');
+                            }
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+
+            })
+        });
+
+        //$('.isconcern').click(function(){
+        //    var self = this;
+        //    var text = $('.is_likes')[0].innerHTML;
+        //    $(self).find('.is_likes')[0].innerHTML = (text == 0) ?  1 : 0;
+        //    var fans = $(self).find('.likes')[0].innerHTML;
+        //    fans = fans - 0;
+        //    $.ajax({
+        //        url:'#{root_path}/home/exhibition/concern',
+        //        type:'POST',
+        //        data:{text: text},
+        //        success:function(res){
+        //            if(res.errno == "0"){
+        //                if(res.data == '添加关注成功'){
+        //                    $(self).find('.likes')[0].innerHTML = fans +　1;
+        //                    $(self).find('.icon').addClass('red').removeClass('gray');
+        //                    console.log('添加关注成功');
+        //                }
+        //                else{
+        //                    $(self).find('.likes')[0].innerHTML = fans -　1;
+        //                    $(self).find('.icon').addClass('gray').removeClass('red');
+        //                    console.log('取消关注成功');
+        //                }
+        //            }
+        //            else{
+        //                console.log('添加关注失败');
+        //            }
+        //        },
+        //        error:function(err){
+        //            console.log(err);
+        //        }
+        //    })
+        //});
+        ////播放视频
+        //var play = false;
+        //document.addEventListener('touchstart', function (event) {
+        //    if(event.srcElement.tagName == 'VIDEO'){
+        //        if(!play){
+        //            $.showPreloader();
+        //            setTimeout(function () {
+        //                $.hidePreloader();
+        //            }, 2000);
+        //            event.srcElement.previousSibling.style.display = 'none';
+        //            event.srcElement.play();
+        //            play = !play;
+        //        }
+        //        else{
+        //            event.srcElement.previousSibling.style.display = 'block';
+        //            event.srcElement.pause();
+        //            play = !play;
+        //        }
+        //    }
+        //},false);

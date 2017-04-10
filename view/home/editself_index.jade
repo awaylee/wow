@@ -1,0 +1,203 @@
+//
+   Created by liwei on 2016/11/28.
+extends layout
+block head
+    script(type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js")
+    //script(type="text/javascript").
+    //    $(document).on('click', '.create-actions', function () {
+    //        var buttons1 = [
+    //            {
+    //                text: '拍照',
+    //                bold: true,
+    //                onClick:function () {
+    //
+    //                }
+    //            },
+    //            {
+    //                text: '从手机相册选择',
+    //                bold: true,
+    //                onClick: function () {
+    //                }
+    //            }
+    //        ];
+    //        var buttons2 = [
+    //            {
+    //                text: '取消',
+    //                bg: 'danger'
+    //            }
+    //        ];
+    //        var groups = [buttons1, buttons2];
+    //        $.actions(groups);
+    //    });
+
+block content
+    header.bar.bar-nav
+        h1.title
+            a.icon.icon-left.left(href="javascript:history.back(-1);")
+            | 头像设置
+
+    nav.bar.bar-tab
+        a.tab-item.external(href="./home")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-xiehou")
+            span.tab-label
+                span="邂逅"
+        a.tab-item.external(href="./source")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-tanyuan")
+            span.tab-label
+                span="探源"
+        a.tab-item.external(href="./find")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-faxian")
+            span.tab-label
+                span="发现"
+        a.tab-item.external.active(href="./me")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-wode")
+            span.tab-label
+                span="我"
+    .content
+        .card
+            .card-content
+                .card-content-inner
+                    .edit-img.create-actions
+                        if(userinfo)
+                            img#editimg(src=userinfo.headimgurl width="100%")
+        .card
+            .card-header.row
+                span.col-25="昵称:"
+                span.col-75=userinfo.nickname
+            .card-header.row
+                span.col-25="城市:"
+                span.col-75=userinfo.city
+            //.card-header.row
+            //    span.col-25="电话:"
+            //    span.col-75="18282821102"
+            //.card-header.row
+            //    span.col-25="邮箱:"
+            //    span.col-75="83299832@qq.com"
+        .card
+            .card-content
+                p
+                    a.button.button-big#exit(href="./login")="退出登录"
+block footer
+    script(type="text/javascript").
+        $('#exit').on('click',function () {
+            $.ajax({
+                type:'POST',
+                url:'http://muser.gzzr.com/logout',
+                data:{'token':token},
+                success:function (data) {
+                    alert('退出成功！');
+                }
+            })
+        });
+    script(type="text/javascript").
+        $(document).ready(function () {
+            var url = location.href.split('#')[0];
+            //进行encodeURIComponent
+            url = encodeURIComponent(url);
+            $.ajax({
+                url: '#{root_path}/home/home/sign',
+                method: "POST",
+                contentType: "application/json",
+                data: {url: url},
+                success: function (res) {
+                    var sign_data = res.data;
+                    sign(sign_data);
+                },
+                error: function (err) {
+                    if(isAndroid && err.status == 0){
+                        var sign_data = err.data;
+                        sign(sign_data);
+                    }
+                    console.log(err);
+                }
+            });
+        });
+        function sign(data) {
+            wx.config({
+                debug: false,
+                appId: data.appid,
+                timestamp: data.timestamp,
+                nonceStr: data.nonceStr,
+                signature: data.signature,
+                jsApiList: ['getLocation', 'chooseImage', 'uploadImage']
+            });
+            //验证成功(
+            wx.ready(function(){
+
+            });
+            //验证失败
+            wx.error(function (res) {
+                //alert(JSON.stringify(data));
+            });
+        }
+        //预览用
+        //if(window.parent.location.pathname == '/admin/preview'){
+        //console.log(1);
+        //}
+        $(document).on('click', '.create-actions', function () {
+            var buttons1 = [
+                {
+                    text: '拍照',
+                    bold: true,
+                    onClick: function () {
+                        wx.chooseImage({
+                            count: 1, // 默认9
+                            sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+                            sourceType: ['camera'], // 可以指定来源是相册还是相机，默认二者都有
+                            success: function (res) {
+                                var localIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+                                console.log(localIds);
+                                $.ajax({
+                                    url: '#{root_path}/home/editself/edit',
+                                    method: "POST",
+                                    contentType: "application/json",
+                                    data: {localIds: localIds},
+                                    success: function (res) {
+                                    },
+                                    error: function (err) {
+                                    }
+                                });
+                            }
+                        });
+                    }
+                },
+                {
+                    text: '从手机相册选择',
+                    bold: true,
+                    onClick: function () {
+                        wx.chooseImage({
+                            count: 1, // 默认9
+                            sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+                            sourceType: ['album'], // 可以指定来源是相册还是相机，默认二者都有
+                            success: function (res) {
+                                var localIds = res.localIds; // 返回选定照片的本地ID列表，localId可以作为img标签的src属性显示图片
+                                console.log(localIds);
+                                $.ajax({
+                                    url: '#{root_path}/home/editself/edit',
+                                    method: "POST",
+                                    contentType: "application/json",
+                                    data: {localIds: localIds},
+                                    success: function (res) {
+                                    },
+                                    error: function (err) {
+                                    }
+                                });
+                                //$('#editImg').css('src',localIds);
+                            }
+                        })
+                    }
+                }
+            ];
+            var buttons2 = [
+                {
+                    text: '取消',
+                    bg: 'danger'
+                }
+            ];
+            var groups = [buttons1, buttons2];
+            $.actions(groups);
+        });

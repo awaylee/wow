@@ -1,0 +1,302 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+    link(rel="stylesheet" href="#{root_path}/static/css/admin/wangEditor.min.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+    script(type="text/javascript" src="#{root_path}/static/js/lib/wangEditor.js")
+
+block main
+    .table_box(artist_id=artist.artist_id)
+        .ex_title.row
+            .col-xs-4
+                ol.breadcrumb
+                    li: a(href="./exhibition")="展览列表"
+                    li: a(href="./addex")="展览信息"
+                    li.active="参与大咖信息"
+            .col-xs-8.text-right
+                .btn.btn-success.publish="修改"
+                .btn.btn-default="退出"
+        h3="头像"
+        .thumbnail.margin-top(style="width:230px;height:275px")
+            .add_img
+                img.avatar_img(src=artist.avatar)
+            .caption.text-center
+                .btn.btn-primary.margin-1l.relative="修改头像"
+                    form.uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100%; z-index:99;")
+                        input.filechooser.edit_img(type="file" name="act_img" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+        .input-group
+            span.input-group-addon="大咖姓名"
+            input.form-control.art_name(type="text" value=artist.name)
+        h3.margin-top="相册/视频"
+        .photos_img
+            .editart_img.relative
+                i.iconfont.icon-zhaoxiangji
+                form.uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100%; z-index:99;")
+                    input.filechooser.work_img(type="file" name="work_photos" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+        .work_pics
+            each picture in artist.pictures
+                .pic_wrap.relative
+                    .add_btn
+                        img(src=picture.picture)
+                    span.issue_cancel.icon.iconfont.icon-reduce
+                    .input-group
+                        span.input-group-addon="名称"
+                        input.form-control.w_name(type="text" value=picture.name)
+        .row
+            .col-xs-4
+                h3.margin-top="相关展览"
+            .col-xs-8.text-right
+                .btn.btn-success.add_prop(data-target='#myModal' data-toggle='modal')="增加"
+                .btn.btn-danger.delete="删除"
+        table.table.table-bordered.table-hover.margin-top
+            thead.art_join
+                tr
+                    td
+                        input(type="checkbox")
+                    td="展览编号"
+                    td="操作"
+            tbody.body_id
+                each act in artist.act_ids
+                    tr
+                        td
+                            input(type="checkbox")
+                        td.act_id=act
+                        td
+                            a.btn.btn-xs.btn-default(href="./editex?act_id=#{act}")="编辑"
+                                .glyphicon.glyphicon-list-alt
+        h3="大咖简介："
+        .textarea_article
+            #editor(style="height:400px;max-height:500px;")
+
+    #myModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel")
+        .modal-dialog.modal-lg(role="document")
+            .modal-content
+                .modal-header
+                    button.close(data-dismiss="modal" aria-label="Close")
+                        span(aria-hidden="true")
+                            | &times;
+                    h4.modal-title="请选择参与大咖，如果没有请选择新增按钮"
+                .modal-body
+                    table.table.table-bordered.table-hover
+                        thead
+                            tr
+                                td
+                                    input.checkall(type="checkbox")
+                                td="展览编号"
+                                td="操作"
+                        tbody
+                            each act in acts
+                                tr.art_tr
+                                    td(act_id = act.act_id)
+                                        input(type="checkbox")
+                                    td.act_id=act.act_id
+                                    td
+                                        a.btn.btn-xs.btn-default(href="./editex?act_id=#{act.act_id}")="编辑"
+                                            .glyphicon.glyphicon-list-alt
+
+                .modal-footer
+                    button.btn.btn-success.append(data-dismiss="modal")="添加"
+                    a.btn.btn-primary.add(href="./addart")="新增"
+                    button.btn.btn-default(data-dismiss="modal")="取消"
+
+block footer
+    script(type="text/javascript").
+        //初始化
+        var name;//名称
+        var avatar;//头像
+        var intro;//简介
+        var pictures = [];//相册、视频列表
+        var act_ids = [];//相关展览id
+
+        var editor = new wangEditor('editor');
+        editor.create();
+        var data = !{JSON.stringify(artist)};
+        editor.$txt.html(data.intro);
+
+        //上传图片
+        $(".edit_img").on("change", function () {
+            var files = this.files;
+            var file = files[0];
+            var _this = this;
+            console.log(file);
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function () {
+                avatar = this.result;
+                $(_this).parents(".thumbnail").find("img").attr("src", avatar);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function doUpload(self) {
+            var parent = $(self)[0].parentNode;
+            var formData = new FormData($(parent)[0]);
+            $.ajax({
+                url: './editex/upload',
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    console.log(res.data);
+                    $(self).parents(".thumbnail").find("img").attr("src", res.data);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }
+
+        //删除作品照片
+        $('.issue_cancel').on('click', function () {
+            $(this).parents('.pic_wrap').remove();
+        });
+
+        var item;
+        //上传主要作品图片
+        $(".work_img").on('change', function () {
+            var files = this.files;
+            var file = files[0];
+            var _this = this;
+            console.log(file);
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            Upload(this);
+            var reader = new FileReader();
+            reader.onload = function () {
+                avatar = this.result;
+                var html = "<div class='pic_wrap relative'>\
+                                        <div class='add_btn'>\
+                                            <img src=" + avatar + ">\
+                                        </div> \
+                                        <span class='issue_cancel icon iconfont icon-reduce'></span>\
+                                        <div class='input-group'>\
+                                            <span class='input-group-addon'>名称</span>\
+                                            <input class='form-control w_name' type='text'>\
+                                        </div> \
+                                    </div>";
+                item = $(html);
+                // 绑定删除行为
+                item.find("span").click(deleteImg);
+                $(item).appendTo(".work_pics");
+            };
+            reader.readAsDataURL(file);
+
+        });
+        function Upload(self) {
+            var parent = $(self)[0].parentNode;
+            var formData = new FormData($(parent)[0]);
+            $.ajax({
+                url: "./editex/upload",
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    console.log(res);
+                    //返回图片url
+                    if (res.errno !== 0) {
+                        console.log('上传文件出错');
+                        return
+                    }
+                    $(item).find("img").attr("src", res.data);
+
+                },
+                error: function (err) {
+                    console.log(err);
+                    $.alert('图片上传失败');
+                }
+            });
+        }
+
+        function deleteImg() {
+            $(this).parents('.pic_wrap').remove();
+        }
+
+        //选择全部展览
+        $(".checkall").on("click", function () {
+            if ($(this).prop("checked")) {
+                $("#myModal input[type='checkbox']").prop("checked", true);
+            } else {
+                $("#myModal input[type='checkbox']").prop("checked", false);
+            }
+        });
+
+        //添加展览
+        $(".append").on("click", function () {
+            var strs = [];
+            $(".art_td input[type='checkbox']").each(function () {
+                if ($(this).prop("checked")) {
+                    var str = $(this).parents("tr").clone();
+                    strs.push(str);
+                }
+            });
+            $(".art_join").append(strs);
+        });
+
+        //删除关联展览
+        $('.delete').on('click', function () {
+            $('.body_id input[type="checkbox"]').each(function (index, element) {
+                if ($(this).prop("checked")) {
+                    $(this).parents('tr').remove();
+                }
+            })
+        });
+
+        //添加大咖
+        $(".publish").on('click', function () {
+            let artist_id = $('.table_box').attr("artist_id");
+            name = $('.art_name').val();
+            avatar = $('.avatar_img').attr("src");
+            intro = editor.$txt.text();
+            $('.pic_wrap').each(function (index, element) {
+                var url = $(this).find('img').attr("src");
+                var w_name = $(this).find('.w_name').val();
+                if($.isArray({'picture':url, 'name':w_name},pictures) == -1){
+                    pictures.push({'picture': url, 'name': w_name});
+                }
+                return pictures;
+            });
+            pictures = JSON.stringify(pictures);
+            $('.body_id .act_id').each(function (index, element) {
+                var act_id = $(this).text();
+                if($.isArray(act_id,act_ids) == -1){
+                    act_ids.push(act_id);
+                }
+                return act_ids;
+            });
+            act_ids = JSON.stringify(act_ids);
+            var data = {
+                "artist_id": artist_id,
+                "name": name,
+                "avatar": avatar,
+                "intro": intro,
+                "pictures": pictures,
+                "act_ids": act_ids
+            };
+            console.log(data);
+            $.ajax({
+                url: './editart/edit',
+                type: 'POST',
+                data: data,
+                success: function (res) {
+                    if (res.errno == 0) {
+                        alert('添加成功');
+                        window.location.reload();
+                    } else {
+                        alert('添加失败', res);
+                    }
+                },
+                error: function (res) {
+                    alert('添加失败', res);
+                }
+            })
+        });
+

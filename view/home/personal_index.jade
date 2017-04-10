@@ -1,0 +1,73 @@
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+block content
+    header.bar.bar-nav
+        h1.title=author.name
+    div.content
+        div.card: div.card-content: div.card-content-inner.head_info
+            img.head_img(src=author.avatar width="100px" height="100px")
+            div.text
+                span=author.name
+            div.text
+                span=author.work_num+"件作品"
+                span="/"
+                span=author.follows+"个关注"
+            div.text.isconcern.inline
+                if(!author.is_follow)
+                    span.button.small-btn.no_atten="+关注"
+                else
+                    span.button.small-btn.is_atten="已关注"
+
+            span.button.small-btn
+                a(href="./private?target_id=#{author.author_id}&name=#{author.name}")="私信"
+        each work in works
+            .card
+                .card-header.color-white.no-border.no-padding(valign="bottom")
+                    a(href="./work?work_id=#{work.work_id}")
+                        img.card-cover.card_cover(src=work.picture height="180px")
+                .card-content
+                    .card-content-inner
+                        .work_name=work.name
+                        p.color-gray=work.size+"/"+work.create_time
+                        if(work.is_sale == 0)
+                            span.isSale.work_sale="非卖品"
+                        else if(work.is_sale == 1)
+                            span.isSale.work_sale="可售"
+                        else if(work.is_sale == 2)
+                            span.isSale.work_sale="已经售出"
+block footer
+    script(type="text/javascript").
+        $('.isconcern').click(function(){
+            var text = $(this).children().html();
+            var self = $(this).children()[0];
+            if($(self).hasClass('is_atten')){
+                $(self).removeClass('is_atten');
+            } else {
+                $(self).addClass('is_atten');
+            }
+            $.ajax({
+                url:'./personal/addconcern',
+                type:'POST',
+                data:{text: text},
+                success:function(res){
+                    console.log(res);
+                    if (res.errno == "0") {
+                        if (res.data == '添加关注成功') {
+                            self.innerHTML = "已关注";
+                            console.log('添加关注成功');
+                        }
+                        else {
+                            self.innerHTML = "+关注";
+                            console.log('取消关注成功');
+                        }
+                    }
+                    else{
+                        console.log('添加关注失败');
+                    }
+                },
+                error:function(err){
+                    console.log(err);
+                }
+            })
+        });

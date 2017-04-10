@@ -1,0 +1,148 @@
+extends layout
+
+block head
+    //script(type="text/javascript",src="#{root_path}/static/js/app/index.js")
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+    script(type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js")
+    script(type="text/javascript", src="#{root_path}/static/js/common.js")
+
+
+block content
+    header.bar.bar-nav
+        div.clearfix
+            h1.title="可售艺术品"
+    nav.bar.bar-tab.bar_tab
+        a.tab-item.external(href="./home")
+            i.icon.iconfont.icon-shouye
+            span.tab-label
+                span="首页"
+        a.tab-item.external.active(href="./find")
+            i.icon.iconfont.icon-yanjing
+            span.tab-label
+                span="发现"
+        a#issue.tab-item.external.create-actions(href="javascript:;")
+            i.icon.iconfont.icon-jiahao1
+        a.tab-item.external(href="./notice")
+            i.icon.iconfont.icon-sixin
+            span.tab-label
+                span="通知"
+        a.tab-item.external(href="./me")
+            i.icon.iconfont.icon-yonghu
+            span.tab-label
+                span="我的"
+
+
+    div.content(style="background:#ffffff")
+        div
+            .tabs
+                #tab2.tab.active
+                    div.infinite-scroll(data-distance="150")
+                        .list-block
+                            ul.list-container(style='padding-bottom:10px')
+                        .infinite-scroll-preloader
+                //#tab2.tab.active
+                //    div.infinite-scroll(data-distance="50")
+                //        .list-block
+                //            ul.list-container(style='padding-bottom:10px')
+                //                li.item-content.new_work_item
+                //                    a(href="./work?work_id=111")
+                //                        img.new_work_img(src="#{root_path}/static/images/find.jpg")
+                //                li.item-content.new_work_item
+                //                    a(href="./work?work_id=111")
+                //                        img.new_work_img(src="#{root_path}/static/images/find.jpg")
+                //                li.item-content.new_work_item
+                //                    a(href="./work?work_id=111")
+                //                        img.new_work_img(src="#{root_path}/static/images/find.jpg")
+                //        .infinite-scroll-preloader
+
+block footer
+    script(type="text/javascript").
+
+        $(function () {
+            var loading = false;
+            var loadingEnd = false;
+
+            // 最多可加载的条目
+            var maxItems = 60;
+            // 每次加载添加多少条目
+            var itemsPerLoad = 15;//一页加载15条
+
+            var curTop;
+            var lastTop = 0;
+
+            // 上次加载的序号
+            var lastIndex = 15;
+
+            var page = 1;//加载第一页
+
+            //新作刷新
+            if (!$("#tab2").find('.new_work_img').length) {
+                $('.content').scroll(function () {
+                    curTop = $('.content').scrollTop();
+                    //console.log(curTop);
+                    if (curTop - lastTop > 0 && !loadingEnd) {
+                        infiniteScroll();
+                        lastTop = curTop;
+                    }
+                });
+                addItems();
+            }
+
+            function addItems() {
+                // 生成新条目的HTML
+                //请求后台
+                $.ajax({
+                    url: "./salework/getnew",
+                    type: 'POST',
+                    data: {page: page},
+                    success: function (res) {
+                        if (res.errno == "0") {
+                            //console.log("请求成功");
+                            var html = '';
+                            for (var i = 0; i < res.data.length; i++) {
+                                html += '<li class="item-content new_work_item"><a href="./work?work_id=' + res.data[i].work_id + '"><img class="new_work_img" src=' + res.data[i].small_picture + '></a></li>';
+                            }
+                            // 添加新条目
+                            $('.infinite-scroll .list-container').append(html);
+                            if (res.data.length > itemsPerLoad) {
+                                $(".infinite-scroll-preloader")[0].innerHTML = "";
+                                $(".infinite-scroll-preloader").append("<div class='preloader'></div>")
+                            }
+                            page += 1;
+                        }
+                        else {
+                            console.log("请求失败");
+                        }
+                    },
+                    error: function () {
+                        console.log('请求失败');
+                    }
+                });
+            }
+
+            function infiniteScroll() {
+                if (loading) return;
+                // 设置flag
+                loading = true;
+                // 模拟1s的加载过程
+                setTimeout(function () {
+                    // 重置加载flag
+                    loading = false;
+                    if (lastIndex >= maxItems) {
+                        // 删除加载提示符
+                        $('.infinite-scroll-preloader').remove();
+                        console.log("加载完成");
+                        loadingEnd = true;
+                        return;
+                    }
+                    // 添加新条目
+                    addItems();
+
+                    // 更新最后加载的序号
+                    lastIndex = $('.list-container li').length;
+
+                    //容器发生改变,如果是js滚动，需要刷新滚动
+                    $.refreshScroller();
+                }, 2000);
+            }
+        });

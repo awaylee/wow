@@ -1,0 +1,172 @@
+extends layout
+
+block content
+    header.bar.bar-nav
+        h1.title="场地详情"
+
+    nav.bar.bar-tab
+        a.tab-item.external(href="./home")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-xiehou")
+            span.tab-label
+                span="邂逅"
+        a.tab-item.external.active(href="./source")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-tanyuan")
+            span.tab-label
+                span="探源"
+        a.tab-item.external(href="./find")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-faxian")
+            span.tab-label
+                span="发现"
+        a.tab-item.external(href="./me")
+            svg.icon(aria-hidden="true")
+                use(xlink:href="#icon-wode")
+            span.tab-label
+                span="我的"
+    div.content
+        div.card
+            div.card-content
+                div.card-content-inner.relative
+                    div.content-padded.row
+                        div.col-33
+                            img(src=areaDetail.icon width="100%")
+                        div.col-66
+                            h3.place-title=areaDetail.name
+                            div.text
+                                span.fans="粉丝："
+                                span.fans-num=areaDetail.fans
+                            div.text
+                                span="电话："
+                                span.phone=areaDetail.tel
+                        div.concern.clear
+                            if(areaDetail.is_follow)
+                              span.isconcern="已关注"
+                            else
+                              span.isconcern="+关注"
+        div.buttons-tab
+            - if(areaDetail.acts)
+                a.tab-link.button(href="#tab1")="展览" + "("+areaDetail.acts.length+")"
+            a.tab-link.button.active(href="#tab2")="详情"
+            - if(areaDetail.big_photos !== undefined && areaDetail.videos !== undefined)
+                - var num = areaDetail.big_photos.length + areaDetail.videos.length
+                a.tab-link.button(href="#tab3")="相册/视频" + "("+ num +")"
+        div.content-block.areaExhibition
+            div.tabs
+                div#tab1.tab
+                    div.content-block.areaExhibition
+                        each actInfo in areaDetail.acts
+                            div.card.area-card: div.card-content: div.content-padded.row.relative
+                                a.full(href="./exhibition?act_id="+actInfo.act_id)
+                                div.col-33
+                                    img.areaImg(src=actInfo.photos[0] width="100%")
+                                div.col-66
+                                    div.text
+                                        h1=actInfo.name
+                                    div.text
+                                        span="时间："
+                                        span.time=actInfo.start_time + "-" + actInfo.end_time
+                                    div.text
+                                        span="场馆："
+                                        span(filed="adress")=actInfo.area.name
+                                    div.tag-group
+                                      each label in actInfo.labels
+                                        span.tags=label.name
+                                    div.place-icon.area-place-icon
+                                        svg.icon(aria-hidden="true")
+                                            use(xlink:href="#icon-guanzhu")
+                                        span(filed="concern")=actInfo.views
+                                        span="  "
+                                        svg.icon(aria-hidden="true")
+                                            use(xlink:href="#icon-zan")
+                                        span(filed="like")=actInfo.likes
+                                    - var d = new Date();
+                                    - var year = d.getFullYear();
+                                    - var month = (d.getMonth() + 1) < 10 ? ('0'+ d.getMonth() + 1) : (d.getMonth() + 1);
+                                    - var day = d.getDate() < 10 ? ('0'+ d.getDate()) : (d.getDate());
+                                    - var now = year+"."+ month +"."+ day;
+                                    - now = now.replace(/[^0-9]/g,'');
+                                    - var endTime = actInfo.end_time.replace(/[^0-9]/g,'');
+                                    if(endTime < now)
+                                        div.endTag
+                                            svg.icon(aria-hidden="true")
+                                                use(xlink:href="#icon-jieshu")
+                div#tab2.tab.active
+                    div.content-block.areaInfo
+                        div.content-padded.row
+                            div.text
+                                span="地址："
+                                span=areaDetail.addr
+                            div.text
+                                span="简介："
+                                !{areaDetail.detail}
+                div#tab3.tab
+                    div.content-block
+                        div.content-padded.row.area_img
+                          ul
+                            each photo in areaDetail.big_photos
+                                li.col-50
+                                    img(src=photo width="100%")
+                            each video in areaDetail.videos
+                                li.col-50
+                                    div.videoback#videoback
+                                        img.playicon(src="#{root_path}/static/images/play.png")
+                                        - if(!isAndroid)
+                                         video(src=video webkit-playsinline width="100%" poster="#{root_path}/static/images/cover.jpg" height="auto" x-webkit-airplay loop="loop" preload="none")
+                                        - else
+                                         video(width="100%" height="auto" webkit-playsinline poster="#{root_path}/static/images/cover.jpg" playsinline x-webkit-airplay preload="none" loop="loop" src=video)
+block footer
+    script(type="text/javascript").
+        $('.concern').click(function () {
+            var text = $(this).children()[0].innerHTML;
+            var self = $(this).children()[0];
+            var fansnum = $('.fans-num')[0].innerText;
+            fansnum = fansnum - 0;
+            $.ajax({
+                url: '#{root_path}/home/areainfo/concern',
+                type: 'POST',
+                data: {text: text},
+                success: function (res) {
+                    if (res.errno == "0") {
+                        if (res.data == '添加关注成功') {
+                            self.innerHTML = "已关注";
+                            $('.fans-num')[0].innerHTML = fansnum + 1;
+                            console.log('添加关注成功');
+                        }
+                        else {
+                            self.innerHTML = "+关注";
+                            $('.fans-num')[0].innerHTML = fansnum - 1;
+                            console.log('取消关注成功');
+                        }
+                    }
+                    else {
+                        console.log('添加关注失败');
+                    }
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            })
+        });
+        //播放视频
+        var play = false;
+        document.addEventListener('touchstart', function (event) {
+            if (event.srcElement.tagName == 'VIDEO') {
+                if (!play) {
+                    $.showPreloader();
+                    setTimeout(function () {
+                        $.hidePreloader();
+                    }, 2000);
+                    event.srcElement.previousSibling.style.display = 'none';
+                    event.srcElement.play();
+                    play = !play;
+                }
+                else {
+                    event.srcElement.previousSibling.style.display = 'block';
+                    event.srcElement.pause();
+                    play = !play;
+                }
+            }
+        }, false);
+

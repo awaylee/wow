@@ -1,0 +1,298 @@
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/admin/add.css")
+    link(rel="stylesheet" href="#{root_path}/static/css/admin/wangEditor.min.css")
+block content
+    div.content
+        h3="编辑场地"
+        div.describe
+            p
+                span="场地名称"
+                input#site_name(type="text" value=area.name)
+            select#site_status
+                - if(area.status == 1)
+                    option(value="1")="状态：有效"
+                    option(value="0")="状态：无效"
+                - else
+                    option(value="0")="状态：无效"
+                    option(value="1")="状态：有效"
+        div.describe: p
+                span="初始化粉丝数"
+                input#init_fans(type="text" value=area.init_fans)
+        div.describe: p
+                span="联系方式"
+                input#site_tel(type="tel" value=area.tel)
+        div.describe: p
+                span="地址"
+                input#site_addr(type="text" value=area.addr readonly)
+        div.map
+            div#allmap
+        div.describe
+            span="ICON图"
+            form#iconform(enctype="multipart/form-data")
+                input#filechooser(type="file" name="icon" size="40")
+        div.img.head_pic
+                img#previewer(alt="icon" src=area.icon)
+                span.close="X"
+        div.clear
+        div.describe
+            span="大图"
+            form(enctype="multipart/form-data")
+                input#bigphotos(type="file" name="big_photos" size="40")
+        div.photo.bigphoto
+            each big_photo in area.big_photos
+              div.img.pic
+                img(src=big_photo)
+                span.close="X"
+        div.clear
+        div.describe
+            span="相册"
+            form(enctype="multipart/form-data")
+                input#photochooser(type="file" name="photos" size="40")
+        div.photo.photos
+            each photo in area.photos
+                div.img.pic
+                    img(src=photo)
+                    span.close="X"
+        div.clear
+        div.describe
+            span="视频"
+            form#imageform(enctype="multipart/form-data")
+                input#videochooser(type="file" name="video" size="40")
+        div.photo.videos
+          each video in area.videos
+            div.video
+                video: source(src=video)
+                div: img(src="#{root_path}/static/images/play1.png")
+                span.close="X"
+                //p="视频名称"
+        div.clear
+        div.editor
+            span.leftText="场地详情"
+            div#editor
+                !{area.detail}
+        div.handle
+            span#save="保存并关闭"
+            span#cancel="取消"
+block footer
+    script(type="text/javascript" src="#{root_path}/static/js/lib/wangEditor.min.js")
+    script(type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZLhTHdwD8XGGLOWki2xhNTyUP8FjbrTj")
+    script(type="text/javascript").
+        var editor = new wangEditor('editor');
+        editor.create();
+        var flag = 0;
+        var icon = "";
+        var big_photos = [];//大图列表
+        var photos = [];//图片列表
+        var videos = [];//视频列表
+        var addr_ll = [];//0号位存储经度，1号位存储纬度
+
+
+        $('#site_addr').click(function(){
+            //调用百度地图API
+            var map = new BMap.Map("allmap");
+            var point = new BMap.Point(116.331398,39.897445);
+            map.centerAndZoom(point,12);
+            var geoc = new BMap.Geocoder();
+
+            map.addEventListener("click", function(e){
+                var pt = e.point;
+                geoc.getLocation(pt, function(rs){
+                    var addComp = rs.addressComponents;
+                    var point = rs.point;
+                    addr_ll = [point.lng, point.lat];
+                    var addr = addComp.province+addComp.city+ addComp.district+addComp.street + addComp.streetNumber;
+                    $('#site_addr')[0].value = addr;
+                });
+            });
+            map.enableScrollWheelZoom();   //启用滚轮放大缩小，默认禁用
+            map.enableContinuousZoom();    //启用地图惯性拖拽，默认禁用
+        });
+
+
+        //icon图
+        filechooser.onchange = function() {
+            var files = this.files;
+            var file = files[0];
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+                icon = this.result;
+                var span = '<span class="close">&times;</span>';
+                $(".head_pic").append(span);
+                previewer.src = icon;
+                //删除添加的图片
+                $(".head_pic .close").on("click",function(){
+                    previewer.src = "";
+                    filechooser.value = '';// 清空图片上传框的值
+                    $(".head_pic .close").remove();
+                    icon = "";
+                });
+            };
+            reader.readAsDataURL(file);
+        };
+
+        //大图
+        bigphotos.onchange = function() {
+            var files = this.files;
+            var file = files[0];
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+                var result = this.result;
+                big_photos.push(result);
+                var imgs = '<div class="img pic"><img alt="banner" src='+result+'><span class="close">&times;</span></div>'
+                $(".bigphoto").append(imgs);
+            };
+            reader.readAsDataURL(file);
+        };
+        //删除添加的图片
+        $(".bigphoto .close").unbind('click').click(function(){
+            var index = $(this).parent('.img').index();
+            big_photos.splice(index,1);
+            delete_img(index, 'big_photos');
+            $(this).parent(".pic").remove();
+            bigphotos.value = '';
+        });
+        //相册
+        photochooser.onchange = function() {
+            var files = this.files;
+            var file = files[0];
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+                var result = this.result;
+                photos.push(result);
+                var imgs = '<div class="img pic"><img alt="banner" src='+result+'><span class="close">&times;</span></div>'
+                $(".photos").append(imgs);
+            };
+            reader.readAsDataURL(file);
+        };
+        //删除添加的图片
+        $(".photos .close").unbind('click').click(function(){
+            var index = $(this).parent('.img').index();
+            photos.splice(index,1);
+            delete_img(index, 'photos');
+        $(this).parent(".pic").remove();
+            photochooser.value = '';
+        });
+        //视频
+        videochooser.onchange = function(){
+            var files = this.files;
+            var file = files[0];
+            // 接受 ogg|mp4|flv|wmv 类型的视频
+            if (!/\/(?:ogg|mp4|flv|wmv)/i.test(file.type)) return;
+            doUpload(this);
+            var reader = new FileReader();
+            reader.onload = function() {
+                var result = this.result;
+                videos.push(result);
+                var addVideo = '<div class="video"><video><source src='+result+'></source></video><div><img src="#{root_path}/static/images/play1.png"></div><span class="close">&times;</span><p>视频名称</p></div>';
+                $(".videos").append(addVideo);
+            };
+            reader.readAsDataURL(file);
+        }
+
+            //删除添加的视频
+            $(".videos .close").unbind('click').click(function(){
+                var index = $(this).parent('.video').index();
+                videos.splice(index,1);
+                delete_img(index, 'video');
+            $(this).parent(".video").remove();
+            $("#videochooser").val("");
+            });
+        //保存
+        $("#save").on("click",function(){
+            var siteName = $("#site_name").val();
+            var siteStatus = $("#site_status").val();
+            var initFans = $("#init_fans").val();
+            var siteTel = $("#site_tel").val();
+            var siteAddr = $("#site_addr").val();
+            var detail = editor.$txt.html(); // 获取编辑器区域完整html代码
+            console.log(getData());
+            function getData(){
+                var json = {
+                    'name':siteName,
+                    'init_fans':initFans,
+                    'tel':siteTel,
+                    'status':siteStatus,
+                    'addr':siteAddr,
+                    'detail':detail,
+                    'addr_ll':['110', '110']
+                };
+                return json;
+            }
+            $.ajax({
+                type:"POST",
+                url:"#{root_path}/admin/editarea/add",
+                contentType: "application/json; charset=utf-8",
+                data:JSON.stringify(getData()),
+                success:function(data){
+                    if(data.errno == 0){
+                        console.log('请求成功。正在跳转...');
+                        window.location.href = "#{root_path}/admin/areamanage"
+                    }
+                },
+                error:function(error){
+                    console.log(error);
+                }
+            });
+        });
+
+        //取消
+        $("#cancel").on("click",function(){
+            $("#site_name").val("");
+            $("#site_status").val(0);
+            $("#init_fans").val("");
+            $("#site_tel").val("");
+            $("#site_addr").val("");
+            $("#detail").val("");
+            icon = "";
+            big_photos = [];//大图列表
+            photos = [];//图片列表
+            videos = [];//视频列表
+            addr_ll = [];
+            $(".pic").remove();
+            bigphotos.value = '';
+            previewer.src = "";
+            $(".close").remove();
+            $(".video").remove();
+        });
+        function doUpload(self){
+            var parent = $(self)[0].parentNode;
+            var formData = new FormData($(parent)[0]);
+            $.ajax({
+                url: '#{root_path}/admin/editarea/upload',
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    console.log(res.data);
+                    flag = 1;
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }
+        function delete_img(index, name) {
+            $.ajax({
+                url: '#{root_path}/admin/editarea/deleteimg',
+                type: 'POST',
+                data: {index: index, name: name},
+                success: function (res) {
+                    console.log(res);
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }

@@ -1,0 +1,138 @@
+extends layout
+
+block content
+    div.C_wrap
+        include header
+        div.table
+            div.thead
+                span.text="广告位列表"
+                span.text.num="("+ads.length+")"
+                ul
+                    li.blue
+                        a(href="./addad" style="color:#ffffff;")="新增"
+                    li.blue.delete
+                        span="删除"
+                    li.blue
+                        a(href="./addad" style="color:#ffffff;")="有效"
+                    li.blue
+                        span="无效"
+            table
+                tr
+                    td
+                        input.checkall(type="checkbox",name="checkbox")
+                    td="编号"
+                    td.ad_title="广告标题"
+                    td.ad_location="位置"
+                    td.ad_pic="图片"
+                    td.ad_href="链接"
+                    td.ad_state="状态"
+                    td.operation="操作"
+                 each ad in ads
+                    tr.item
+                        td
+                            input.checkbox(type="checkbox",name="checkbox")
+                        td
+                            span.ad_id=ad.ad_id
+                        td
+                            span=ad.name
+                        td
+                            span=ad.location
+                        td
+                            img.tdimg(src=ad.photos[0])
+                        td
+                            span=ad.ad_url
+                        td
+                            - if(ad.status)
+                              span="有效"
+                            - else
+                              span="无效"
+                        td
+                            a(href="./editad?ad_id=#{ad.ad_id}")="编辑"
+block footer
+    script(type="text/javascript").
+        var checked = false;
+        var checkedNum = 0;
+        //删除操作
+        //点击删除按钮时搜索所有被选上的元素，并选取该行，然后remove
+        $('.delete').click(function(){
+            var delItem = $('.item').find('.checked').parent('td').parent('.item');
+            var idArray = [];
+            var delete_ad_id = delItem.find('.ad_id');
+            delete_ad_id.map(function(item){
+                idArray.push(delete_ad_id[item].innerHTML);
+            });
+            console.log(idArray);
+            if(delItem.length == 0){
+                alert('请勾选后再操作')
+            }
+            else{
+                delItem.remove();
+                deleteById(idArray);
+                //判断是否删除完毕，如果是就关闭全选
+                if($('.checkbox').length == 0){
+                    $('.checkall')[0].checked = false;
+                    checked = false;
+                }
+                $('.num')[0].innerHTML = "("+$('.checkbox').length+")";
+            }
+        });
+        $('.checkall').click(function(){
+            $('.checkbox').toggleClass('checked');
+            //增加背景色
+            addBackColor();
+            if(checked){//已经勾选再点击则取消
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            else{//未勾选则勾选
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            checked = !checked;
+        });
+        $('.checkbox').click(function(){
+            $(this).toggleClass('checked');
+            addBackColor();
+            $('.checkbox').map(function(item){
+                if($('.checkbox')[item].checked == true){
+                    checkedNum++;
+                }
+            })
+            if(checkedNum == $('.checkbox').length){
+                $('.checkall')[0].checked = true;
+                checked = true;
+            }
+            else{
+                $('.checkall')[0].checked = false;
+                checked = false;
+            }
+            checkedNum = 0;
+        });
+        //为选中的行增加背景色
+        function addBackColor(){
+            $('.item').removeClass('gray');
+            $('.item').find('.checked').parent('td').parent('.item').addClass('gray');
+        }
+        //根据ID发起删除请求
+        function deleteById(id){
+            $.ajax({
+                 url:'#{root_path}/admin/admanage/delete',
+                 type: "POST",
+                 contentType: "application/json; charset=utf-8",
+                 data:JSON.stringify({ad_ids: id}),
+                 success:function(data){
+                    console.log(data);
+                    if(data.errno == 0){
+                        console.log("删除成功");
+                    }
+                    else{
+                        console.log("删除失败")
+                    }
+                 },
+                 error:function(errormsg){
+                    console.log(errormsg);
+                 }
+            })
+        }

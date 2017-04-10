@@ -1,0 +1,39 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-datepicker.css")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-datepicker.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-datepicker.zh-CN.min.js")
+
+block main
+    .head_title
+    ul.nav.nav-tabs.nav-justified(role="tablist")
+        li.active(role="presentation"): a(href="#by_date" aria-controls="by_date" role="tab" data-toggle="tab")="按日期导出数据"
+        li(role="presentation"): a(href="#by_user_id" aria-controls="by_user_id" role="tab" data-toggle="tab")="按ID导出数据"
+
+    .tab-content
+        .tab-pane#by_date.active(role="tabpanel" ).jumbotron.form-group: .input-group.input-daterange#date
+            span.input-group-addon="开始日期"
+            input.form-control(name="start" type="text" readonly="true")
+            //.input-group-addon: .glyphicon.glyphicon-th
+            span.input-group-addon="到"
+            input.form-control(name="end" type="text" readonly="true")
+            //.input-group-addon: .glyphicon.glyphicon-th
+            .input-group-btn
+                button.btn.btn-default.dropdown-toggle(data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+                    span="导出 "
+                    span.caret
+                ul.dropdown-menu.dropdown-menu-right
+                    li: a(href="#")="按日期导出数据"
+                    li: a(href="#")="按日期导出留存数据"
+        .tab-pane#by_user_id(role="tabpanel" ).jumbotron.form-group: .input-group
+            span.input-group-addon="用户ID"
+            input.form-control(type="text")
+            .input-group-btn: button.btn.btn-default="导出"
+
+block footer
+    script(type="text/javascript").
+        $(".input-group#date").datepicker({
+            dateEndDate: "0d",
+            autoclose: true,
+            todayHighlight: true
+        });

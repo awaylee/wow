@@ -1,0 +1,39 @@
+doctype html
+html
+    head
+        title= title
+        //- 引用样式表
+        <!-- 强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览 -->
+        meta(name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width, minimal-ui")
+        <!-- iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览 -->
+        meta(name="apple-mobile-web-app-capable" content="yes")
+        script(src="http://webapi.amap.com/maps?v=1.3&key=02d307eadbd8cb82bbcf53e923f2299d")
+        script(type="text/javascript" src="http://webapi.amap.com/demos/js/liteToolbar.js")
+
+    body
+        #container(style="height:660px")
+
+    script(type="text/javascript").
+        var map = new AMap.Map('container', {
+            resizeEnable: true,
+            zoom: 13
+        });
+        AMap.plugin('AMap.Geocoder', function () {
+            var geocoder = new AMap.Geocoder({
+                city: "010"//城市，默认：“全国”
+            });
+            var marker = new AMap.Marker({
+                map: map,
+                bubble: true
+            });
+            map.on('click', function (e) {
+                marker.setPosition(e.lnglat);
+                geocoder.getAddress(e.lnglat, function (status, result) {
+                    if (status == 'complete') {
+                        document.getElementById('input').value = result.regeocode.formattedAddress
+                    }
+                })
+            })
+
+        });
+

@@ -1,0 +1,111 @@
+//
+   Created by liwei on 2016/12/23.
+extends layout
+block header
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/issue.css")
+block content
+    .page
+        header.bar.bar-nav
+            button.posi_left.color-gray(onclick="self.location=document.referrer;")="取消"
+            h1.title="发布文章"
+            button#preview.posi_right.color-gray.open-popup(disabled="true")="预览"
+        .content
+            .card
+                .card_box
+                    input.article_title(maxlength="32" type="text" placeholder="输入文章标题")
+                .container.margin_2
+                    input#target(type="hidden")
+                    div.article_content
+        footer.bar-footer.bar.this_footer
+            span.tab-item
+                i.icon.iconfont.icon-zhaoxiangji
+                form#uploadimg(enctype="multipart/form-data" style="position:absolute;bottom:0;left:0;opacity:0;width:20%; height:50px; z-index:99;")
+                    input#filechooser(type="file" name="article_img" size="40" capture="camera" accept="image/*" style="height:50px;")
+
+    .popup.preview
+        header.bar.bar-nav
+            button.posi_left.color-gray.close-popup="修改"
+            button.posi_right.color-gray.useable.issue_article="发布"
+        .content
+            .content-padded.preview_content
+
+block footer
+    script(type="text/javascript", src="#{root_path}/static/js/lib/artEditor.js")
+    script(type="text/javascript").
+        $("#preview").click(function () {
+            $.popup('.preview');
+            $(".preview_content").html($("#target").val());
+        });
+        $("input,.article_content").on("blur", function () {
+            var length = $(".article_title").val().length;
+            var value = $('#target').val().length;
+            if (length != 0 && value >7) {
+                $("#preview").addClass("useable").removeAttr("disabled");
+            }
+            else {
+                $("#preview").removeClass("useable").attr("disabled",true);
+            }
+        });
+
+        //发布文章
+        $('.issue_article').on('click',function () {
+            var html = $('#target').val();
+            var name = $(".article_title").val();
+            $.showPreloader('发布中...');
+            $.ajax({
+                url: '../article/publish',
+                type: 'POST',
+                data: {
+                    name: name,
+                    content: html
+                },
+                success: function (res) {
+                    console.log(res);
+                    $.hidePreloader();
+                    if (res.errno == "0") {
+                        $.alert("发布成功",function () {
+                            window.location.href = "../home";
+                        });
+                    }
+                    else {
+                        console.log('发布失败');
+                    }
+                },
+                error: function (err) {
+                    console.log(err);
+                    $.alert("发布失败");
+                }
+            });
+        });
+        $('.article_content').click(function () {
+            $(this).focus();
+        });
+        $('.article_content').artEditor({
+            imgTar: 'filechooser',
+            limitSize: 5,   // 兆
+            showServer: true,
+            uploadUrl: './upload',
+            data: {},
+            uploadField: 'image',
+            placeholader: '<p class="placeholder">请输入文章正文内容</p>',
+            validHtml: ["<br/>"],
+            formInputId: 'target',
+            imgFormId: 'uploadimg',
+            uploadSuccess: function(res) {
+                return res.data;
+            },
+            uploadError: function(res) {
+                console.log(res);
+            }
+        });
+
+        //获取手机键盘高度
+        /*
+        $('.article_title').bind('focus', function () {
+            //$('.this_footer').css('position', 'static');
+            $('.this_footer').height($(window).height()+'px');
+        }).bind('blur', function () {
+            $('.this_footer').css({'position': 'fixed', 'bottom': '0'});
+            //或者$('.this_footer').height('auto');
+        });
+        */

@@ -1,0 +1,40 @@
+extends ../layout
+
+block content
+    div.header
+        h1="艺术WOW"
+    div.container-fluid
+        .col-md-3
+            .panel-group#accordion(role="tablist" aria-multiselectable="true")
+                .panel.panel-defaul.fx_block
+                    .panel-heading#hadingOne(role="tab" data-toggle="collapse" data-parent="#accordion" href="#collapseOne")
+                        h4.panel-title.list_nav="首页"
+                    .panel-collapse.collapse#collapseOne(class=adindex || online || extant || imports ? 'in' : '')
+                        ul.nav.panel-body
+                            li: a(class= adindex ? 'cure' : '', href="#{root_path}/admin/index")="权限管理"
+                            li: a(class= online ? 'cure' : '', href="#{root_path}/admin/index/online")="在线人数"
+                            li: a(class= extant ? 'cure' : '', href="#{root_path}/admin/index/extant")="留存查询"
+                            li: a(class= imports ? 'cure' : '',href="#{root_path}/admin/index/import")="导出数据"
+                .panel.panel-defaul.fx_block
+                    .panel-heading(data-toggle="collapse" data-parent="#accordion" aria-expanded="false" aria-controls="collapseTwo" href="#collapseTwo")
+                        h4.list_nav.panel-title="系统操作"
+                    .panel-collapse.collapse#collapseTwo(class=swipe || userad || publish || opwork || sale || exhibition? 'in' : '')
+                        ul.nav.panel-body
+                            li: a(class= swipe ? 'cure' : '', href="#{root_path}/admin/operation/swipe")="轮播管理"
+                            li: a(class= userad ? 'cure' : '', href="#{root_path}/admin/operation/user")="用户管理"
+                            li: a(class= publish ? 'cure' : '', href="#{root_path}/admin/operation/publish")="发布信息"
+                            li: a(class= opwork ? 'cure' : '', href="#{root_path}/admin/operation/work")="作品管理"
+                            li: a(class= sale ? 'cure' : '', href="#{root_path}/admin/operation/sale")="在线销售申请用户管理"
+                            li: a(class= exhibition ? 'cure' : '', href="#{root_path}/admin/exhibition")="展览管理"
+
+                .panel.panel-defaul.fx_block
+                    .panel-heading(data-toggle="collapse" data-parent="#accordion" href="#collapseThree")
+                        h4.list_nav.panel-title="消息管理"
+                    .panel-collapse.collapse#collapseThree(class=customer || report ? 'in' : '')
+                        ul.nav.panel-body
+                            li: a(class= customer ? 'cure' : '', href="#{root_path}/admin/notice/service")="客服消息"
+                            li: a(class= report ? 'cure' : '', href="#{root_path}/admin/notice/report")="举报处理"
+        .col-md-9
+            block main
+
+

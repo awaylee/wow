@@ -1,0 +1,182 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+
+block main
+    .table_box
+        .ex_title.row
+            .col-xs-4
+                ol.breadcrumb
+                    li.active="展览列表"
+            .col-xs-8.text-right
+                .btn.btn-primary
+                    a(href="./addex")="新增"
+                .btn.btn-danger.delete="删除"
+                .btn.btn-success="有效"
+                .btn.btn-default="无效"
+        .row
+            .col-md-4
+                .input-group
+                    span#name.input-group-addon="展览名称"
+                    input.form-control(aria-describedby="sizing-addon1" placeholder="请输入展览名称")
+            .col-md-4
+                .btn.btn-success="搜索"
+                .btn.btn-default="重置"
+            .col-md-4
+                .input-group
+                    input.form-control(type="text")
+                    .input-group-btn
+                        button.button.btn.btn-default.dropdown-toggle(data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")="状态"
+                            span.caret
+                        ul.dropdown-menu.dropdown-menu-right
+                            li
+                                a(href="javasript:;")="有效"
+                            li
+                                a(href="javasript:;")="无效"
+
+        table.table
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            $("table").bootstrapTable({
+                toolbar: ".toolbar",
+                columns: [
+                    {
+                        title: "",
+                        field: "",
+                        align: "center",
+                        valign: "middle",
+                        checkbox:true,
+                        class:"check"
+                    },
+                    {
+                        title: "编号",
+                        field: "act_id",
+                        align: "center",
+                        valign: "middle",
+                        class:"act_id"
+                    },
+                    {
+                        title: "展览名称",
+                        field: "name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "发起艺术家名",
+                        field: "sponsor_name",
+                        align: "center",
+                        valign: "middle",
+                    }, {
+                        title: "展览时间",
+                        field: "time",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "地址",
+                        field: "addr_name",
+                        align: "center",
+                        valign: "middle",
+                    },
+                    {
+                        title: "操作",
+                        field: "status",
+                        align: "center",
+                        valign: "middle",
+                        formatter: function (value, row, index) {
+                            var val = row.act_id;
+                            return "<a class='btn btn-xs btn-default' href='#{root_path}/admin/editex?act_id="+ val + "'><span class='glyphicon glyphicon-list-alt'></span> 详情</a>";
+                        }
+                    }
+
+                ],
+                checkbox:true,
+                checkboxHeader:true,
+                striped: true,
+                cache: false,
+                //search: true,
+                sortable: true,
+                sortName: 'act_id',
+                sortOrder: 'asc',
+                sidePagination: "server",
+                showRefresh: false,
+                //showToggle: true,
+                //showColumns: true,
+                pagination: true,
+                smartDisplay: true,
+                paginationLoop: false,
+                pageList: '[10, 25, 50, 100, All]',
+                paginationPreText: "上一页",
+                paginationNextText: "下一页",
+                pageSize: 20,
+                pageNumber: 1,
+                totalField: "total",
+                dataField: "rows",
+                pageIndex: "page-index",
+                onLoadSuccess: function (data) {
+                    //console.log(data);
+                    return data.data;
+                },
+                queryParams: function (params) {
+                    //console.log(params);
+                    return params;
+                },
+                onClickCell: function (fild, value, row, $element) {
+                    console.log(row);
+                    var status = row.status;
+                    var reason = row.reason;
+                    var inform_id = row.inform_id;
+                    $('.reason').attr("inform_id", inform_id).text(reason);
+                },
+                onSearch:function () {
+
+                },
+                method: 'post',
+                contentType: "application/x-www-form-urlencoded",
+                url: './exhibition/indexdata'
+            });
+
+            var act_ids = [];
+            //删除展览
+            $('.delete').on('click', function () {
+                $('.table .check input[type="checkbox"]').each(function (index, element) {
+                    if ($(this).prop("checked")) {
+                        var act_id = $(this).parents('tr').find('.act_id').text();
+                        if($.inArray(act_id,act_ids) == -1){
+                            act_ids.push(act_id);
+                        }
+                        //$(this).parents('tr').remove();
+                    }
+                    return act_ids;
+                });
+                if(act_ids.length == 0){
+                    alert('请选择需要删除的展览')
+                } else {
+                    act_ids = JSON.stringify(act_ids);
+                    $.ajax({
+                        url: './exhibition/delete',
+                        type: 'POST',
+                        data: {"act_ids": act_ids},
+                        success: function (res) {
+                            if (res.errno == 0) {
+                                alert("删除成功");
+                                window.location.reload();
+                            } else {
+                                alert('删除失败', res);
+                            }
+                        },
+                        error: function (res) {
+                            alert('删除失败', res);
+                        }
+                    })
+                }
+
+            });
+
+        });

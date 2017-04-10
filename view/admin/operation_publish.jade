@@ -1,0 +1,161 @@
+extends ./common/sidebar
+block head
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-checkbox.js")
+
+block main
+    .publish_title
+        .btn-group.buttons_tab(role="group")
+            a.btn.btn-primary(role="button" href="#{root_path}/admin/operation/publish")="发布作品"
+            a.btn.btn-default(role="button" href="#{root_path}/admin/pbarticle")="发布文章"
+            a.btn.btn-default(role="button" href="#{root_path}/admin/pbmood")="发布心情"
+        .button_right: button.issue.btn.btn-success="发布"
+
+    .tabs_box: .tabs: #tab1.tab.active: .tab_content
+        p.input_wrap.margin-6t
+            input.work_title.border_b(type="text" placeholder="请输入作品名称")
+        .work_detail
+            p.input_wrap: .input-group
+                span.input-group-addon="作品状态："
+                input.switch.isSale(type="checkbox" data-on-label="可售" data-off-label="非卖品" checked="true")
+            p.input_wrap: .input-group
+                span.input-group-addon.work_sort="作品状态："
+                input.form-control.input_txt.size_x(type="text" name="sale")
+                span.input-group-addon="CM(长)"
+                input.form-control.size_y(type="text" name="sale")
+                span.input-group-addon="CM(宽)"
+            p.input_wrap: .input-group
+                span.input-group-addon.work_sort="作品日期："
+                input.form-control.year(type="text" name="sale")
+            p.input_wrap: .input-group
+                span.input-group-addon.work_sort="售卖价格："
+                span.input-group-addon.work_sort="￥"
+                input.form-control.price(type="text" name="sale")
+                span.input-group-addon="元"
+            p.input_wrap
+                span.work_sort="添加作品照片"
+            .work_pics_add
+                .add_btn
+                    i.iconfont.icon-zhaoxiangji
+                        form.uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100%; z-index:99;")
+                            input.filechooser(type="file" name="mood_img" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+            .work_pics
+
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+
+            //初始化
+            var is_sale;//可售状态
+            var title; //作品名称
+            var pictures = [];//图片列表
+            var price;//价格
+            var size_x;//长
+            var size_y;//宽
+            var create_year;//创作年份
+            var create_month;//创作月份
+
+            //上传图片
+            $(".filechooser").on('change', function () {
+                var file = this.files[0];
+                // 接受 jpeg, jpg, png 类型的图片
+                if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+                if (Math.ceil(file.size / 1024 / 1024) > 5) {
+                    console.error('文件太大');
+                    return;
+                }
+                doUpload();//上传图片
+            });
+            function doUpload() {
+                var formData = new FormData($(".uploadimg")[0]);
+                $.ajax({
+                    url: "./upload",
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log(res);
+                        //返回图片url
+                        if (res.errno !== 0) {
+                            console.log('上传文件出错');
+                            return
+                        }
+                        var html = "<div class='work_pic'>\
+                                        <img src=" + res.data + ">\
+                                        <i class='issue_cancel icon iconfont icon-reduce'></i>\
+                                    </div>";
+                        var item = $(html);
+                        // 绑定删除行为
+                        item.find("i").click(deleteImg);
+                        $(".work_pics").append(item);
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            //删除图片
+            function deleteImg() {
+                $(this).parent('.work_pic').remove();
+                var src = $(this).prev('img').attr('src');
+                console.log(src);
+                $.ajax({
+                    url: './remove',
+                    type: 'POST',
+                    data: {src: src},
+                    success: function (res) {
+                        console.log(res)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            };
+            //可售与非卖品
+            $(".switch").checkboxpicker().on('change', function () {
+                $(this).prop("checked") ? $('.price').removeAttr('disabled') : $('.price').attr('disabled', 'true');
+            });
+
+            $('.issue').on('click', function () {
+                is_sale = $("input.switch:checked").prop("checked") ? 1 : 0;
+                title = $('.work_title').val();
+                size_x = $('.size_x').val();
+                size_y = $('.size_y').val();
+                create_year = $('.year').val();
+                create_month = $('.month').val();
+                price = $('.price').val();
+                $.ajax({
+                    url: './pbwork',
+                    type: 'POST',
+                    data: {
+                        title: title,
+                        is_sale: is_sale,
+                        size_x: size_x,
+                        size_y: size_y,
+                        create_year: create_year,
+                        create_month: create_month,
+                        price: price
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            alert("发布成功");
+                            window.location.href = "#{root_path}/admin/operation/publish"
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        alert("发布失败");
+                        console.log(err);
+                    }
+                })
+            })
+
+
+        });

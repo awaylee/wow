@@ -1,0 +1,54 @@
+extends ./common/sidebar
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/lib/bootstrap/bootstrap-table.css")
+
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-zh-CN.js")
+    script(type="text/javascript", src="#{root_path}/static/js/lib/bootstrap/bootstrap-table-toolbar.js")
+
+block main
+    .table_box
+        table.table.table-bordered.table-hover
+            thead
+                tr
+                    td="用户ID"
+                    td="用户昵称"
+                    td="手机号码"
+                    td="证件号码"
+                    td="照片"
+                    td="状态"
+                    td="操作"
+            tbody
+                tr
+                    td="333333"
+                    td="嗯嗯"
+                    td="13000000000"
+                    td="110XXXXXXXXXXXXXX"
+                    td
+                        img(src)
+                    td="未审核"
+                    td
+                        .btn.btn-primary="通过"
+                        .btn.btn-danger="移除"
+                tr
+                    td="333333"
+                    td="嗯嗯"
+                    td="13000000000"
+                    td="110XXXXXXXXXXXXXX"
+                    td
+                        img(src="")
+                    td="未审核"
+                    td
+                        .btn.btn-primary="通过"
+                        .btn.btn-danger="移除"
+                tr
+                    td="333333"
+                    td="嗯嗯"
+                    td="13000000000"
+                    td="110XXXXXXXXXXXXXX"
+                    td
+                        img(src="")
+                    td="已审核"
+                    td
+                        .btn.btn-success="撤销"
+

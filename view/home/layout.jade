@@ -1,0 +1,42 @@
+doctype html
+html
+    head
+        title= title
+        //- 引用样式表
+        <!-- 强制让文档的宽度与设备的宽度保持1:1，并且文档最大的宽度比例是1.0，且不允许用户点击屏幕放大浏览 -->
+        meta(name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width, minimal-ui")
+        <!-- iphone设备中的safari私有meta标签，它表示：允许全屏模式浏览 -->
+        meta(name="apple-mobile-web-app-capable" content="yes")
+        link(rel="stylesheet", href="#{root_path}/static/css/lib/sm/sm.css")
+        link(rel="stylesheet", href="#{root_path}/static/css/lib/sm/sm-extend.css")
+        link(rel="stylesheet", href="#{root_path}/static/css/iconfont/iconfont.css")
+        link(rel="stylesheet", href="#{root_path}/static/css/mobile/nature.css")
+
+        //- 引用脚本
+        //script(type="text/javascript", src="#{root_path}/static/js/lib/iconfont.js")
+        //script(type="text/javascript", src="#{root_path}/static/js/lib/zepto/zepto.js")
+        script(type="text/javascript", src="#{root_path}/static/js/lib/jquery/jquery.js")
+        script(type="text/javascript").
+            var Zepto = jQuery;
+        script(type="text/javascript", src="#{root_path}/static/js/lib/sm/sm.js")
+        script(type="text/javascript", src="#{root_path}/static/js/lib/sm/sm-extend.js")
+        script(type="text/javascript", src="#{root_path}/static/js/lib/sm/sm-city-picker.min.js")
+        script(type="text/javascript").
+            var root_path = !{JSON.stringify(root_path)};
+
+        block head
+
+    body
+        //- 页面自定义header部分
+        block header
+
+        //- 页面内容
+        block content
+
+        //- 页面自定义页脚部分
+        block footer
+
+        //- 页脚引入脚本
+            script(type='text/javascript', src='#{root_path}/static/js/lib/sm/sm.js')
+            script(type='text/javascript', src='#{root_path}/static/js/lib/sm/sm-extend.js')
+            script(type='text/javascript', src='#{root_path}/static/js/lib/sm/sm-city-picker.js')

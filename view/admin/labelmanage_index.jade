@@ -1,0 +1,172 @@
+extends layout
+block content
+    div.C_wrap
+        include header
+        div.table
+            div.seek
+                div._search
+                    p.searchBar
+                        span="标签名称"
+                        input.searchText(type="text")
+                    p.status
+                        span="状态"
+                    select.statusValue
+                        option(value="all")="全部"
+                        option(value="1")="有效"
+                        option(value="0")="无效"
+                div.searchBtn
+                    p.search.light-blue="搜索"
+                    a(href="javascript:;")="重置"
+            div.thead
+                span.text="标签列表"
+                span.text.num='('+labels.length+')'
+                ul
+                    li.blue
+                        a.line-text(href="#{root_path}/导入表.csv" style="color:#ffffff;")="下载批量表"
+                    li.blue.pointer
+                        form#csv(enctype="multipart/form-data")
+                            input#filechooser.clear(type="file" name="csv" style="width:1px;opacity: 0;" onchange="doUpload(this)")
+                            span.line-text="导入表"
+            table
+                tr
+                    td
+                        input.checkall(type="checkbox",name="checkbox")
+                    td.ad_id="编号"
+                    td.ad_title="名称"
+                    td.ad_state="状态"
+                   each label in labels
+                    tr.item
+                        td
+                            input.checkbox(type="checkbox",name="checkbox")
+                        td
+                            span=label.label_id
+                        td
+                            span=label.name
+                        td
+                            - if(label.status)
+                              span="有效"
+                            - else
+                              span="无效"
+            div.result(style='display:none;')
+                .thead: span.text 搜索结果
+                table
+                    thead
+                        tr
+                            td: input.checkall(type="checkbox",name="checkbox")
+                            td.ad_id="编号"
+                            td.ad_title="名称"
+                            td.ad_state="状态"
+                    tbody
+    script(type="text/html" id="template").
+            <tr class="item">
+                <td>
+                    <input type="checkbox" name="checkbox">
+                </td>
+                <td>
+                    <span data-content=label_id></span>
+                </td>
+                <td>
+                    <span data-content=name></span>
+                </td>
+                <td>
+                    <span data-content=status></span>
+                </td>
+            </tr>
+block footer
+    script(type="text/javascript").
+        var checked = false;
+        var checkedNum = 0;
+        //点击搜索发送ajax请求
+        $('.search').click(function(){
+            var searchText = $('.searchText').val();
+            var status = $('.statusValue').val();
+            function getData(){
+                var json = {
+                    'name':searchText,
+                    'status':(status == "all") ? "" : status,
+                };
+                return json;
+            }
+            $.ajax({
+                 url:'#{root_path}/admin/labelmanage/search',
+                 type: "POST",
+                 contentType: "application/json; charset=utf-8",
+                 data:JSON.stringify(getData()),
+                 success:function(res){
+                    if(!res.data.length){
+                        alert('搜索结果为空,请重新输入');
+                        return;
+                    }
+                    $(".result").show().find("tbody").loadTemplate('#template', res.data);
+                 },
+                 error:function(errormsg){
+                    console.log(errormsg);
+                 }
+            })
+        });
+        //搜索条件重置
+        $('.reset').click(function(){
+            $('.searchText')[0].value = "";
+            $('.statusValue')[0].value = "all";
+        });
+        //全选点击之后，为所有选择勾上
+        $('.checkall').click(function(){
+            $('.checkbox').toggleClass('checked');
+            addBackColor();
+            if(checked){//已经勾选再点击则取消
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            else{//未勾选则勾选
+                $('.checkbox').map(function(item){
+                    $('.checkbox')[item].checked = !checked;
+                })
+            }
+            checked = !checked;
+        });
+        //勾选单个的时候判断是否勾选完毕，如果是就勾上全选
+        $('.checkbox').click(function(){
+            $(this).toggleClass('checked');
+            addBackColor();
+            $('.checkbox').map(function(item){
+                if($('.checkbox')[item].checked == true){
+                    checkedNum++;
+                }
+            });
+            if(checkedNum == $('.checkbox').length){
+                $('.checkall')[0].checked = true;
+                checked = true;
+            }
+            else{
+                $('.checkall')[0].checked = false;
+                checked = false;
+            }
+            checkedNum = 0;
+        });
+        //为选中的行增加背景色
+        function addBackColor(){
+            $('.item').removeClass('gray');
+            $('.item').find('.checked').parent('td').parent('.item').addClass('gray');
+        }
+        function doUpload(self){
+            var parent = $(self)[0].parentNode;
+            var formData = new FormData($(parent)[0]);
+            var name = $(self).siblings()[0].name;
+            console.log($(self)[0].parentNode);
+            $.ajax({
+                    url: '#{root_path}/admin/labelmanage/upload',
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log(res.data);
+                        flag = 1;
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+            });
+        }

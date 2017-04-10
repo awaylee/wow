@@ -1,0 +1,71 @@
+extends ./common/sidebar
+
+block main
+    .head_title.work_funs="推荐作品"
+    .work_list
+        each work in work_hot.works
+            .list_block(work_id = work.work_id)
+                .list_introduce
+                    .img_con
+                        img(src=work.picture width="100%" height="100%")
+                    .text_con
+                        p.txt_1="作品ID:"+work.work_id
+                        p.txt_1="作品名称:"+work.name
+                        p.txt_2="排序："
+                            span.rank=work.rank
+                .list_btn
+                    button.modify(data-target="#myModal" data-toggle="modal")="修改"
+
+    #myModal.modal.fade(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
+        .zoom_body
+            .zoom_box
+                .zoom_p
+                    span="作品ID"
+                    input.work_id(type="text" placeholder='推荐的作品id')
+                .zoom_p
+                    span="作品排序"
+                    input.work_rank(type="text" placeholder='作品排序从1-8')
+                .zoom_p.zoom_btn
+                    button.submit="提交"
+                i.issue_cancel.iconfont.icon-Error(data-dismiss="modal" aria-label="Close")
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            $(".modify").on('click',function () {
+                $('.zoom_body').show();
+            });
+
+            //修改推荐作品
+            $('.submit').on('click',function () {
+               var work_id =  $('.work_id').val();
+               var rank = $('.work_rank').val();
+               if(work_id == ""  || rank == ""){
+                   alert('请输入完整信息');
+               } else {
+                   $.ajax({
+                       url: './editrc',
+                       type: 'POST',
+                       data: {
+                           work_id: work_id,
+                           rank: rank
+                       },
+                       success: function (res) {
+                           if (res.errno !== 0) {
+                               alert(res.errmsg);
+                           }
+                           else {
+                               //$('.zoom_body').hide();
+                               location.reload(true);
+                           }
+                       }
+                   });
+               }
+            });
+
+            //关闭修改页面
+            $('.issue_cancel').on('click',function () {
+                $('.zoom_body').hide();
+            })
+        });

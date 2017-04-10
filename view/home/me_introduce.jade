@@ -1,0 +1,450 @@
+//
+   Created by Jeff on 2016/12/22.
+extends layout
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/home.css")
+block content
+    header.bar.bar-nav
+        h1.title="我发布的"
+        .Top_h1
+        .buttons-tab.buttons-fixed.posi_nav
+            a.tab-link.active.button(href="#tab1")="作品"
+            a.tab-link.button(href="#tab2")="文章"
+            a.tab-link.button(href="#tab3")="心情"
+    div.content
+        .Top_h
+        div.tabs
+            div#tab1.tab.active
+                each work in works
+                    .card.relative.no-margin-d.work_id.padding-tb(work_id = "#{work.work_id}")
+                        a.row(href="../work?work_id=#{work.work_id}")
+                            .col-33.card-header.color-white.no-border.no-padding(valign="bottom")
+                                img.card-cover.card_cover_s(src=work.small_picture height="110px")
+                            .card-content.col-66
+                                .card-content-inner.card_home
+                                    .work_name=work.name
+                                    p.color-gray.margin-top=work.size + "/" + work.create_time
+                                    p.margin-top
+                                        if(work.is_sale == 0)
+                                            span.isSale="非卖品"
+                                        else if (work.is_sale == 1)
+                                            span.isSale="可售：￥" + work.price + "元"
+                                        else if (work.is_sale == 2)
+                                            span.isSale="已售"
+                        div.delete_icon
+                            i.iconfont.icon-shanchu.delete_icon1
+
+
+            div#tab2.tab
+                each article in articles
+                    a(href="../article?article_id=#{article.article_id}")
+                        .card.no-margin-d.padding-tb.row
+                            .card-header.color-white.no-border.no-padding.col-33(valign="bottom" style="height:110px")
+                                img.card-cover.card_cover.card_cover_s(src=info.avatar height="110px")
+                            .card-content.col-66
+                                .card-content-inner=article.name
+                //原型图样式
+                //each article in articles
+                //    div.card
+                //        div.card-content.relative.article_id(article_id = "#{article.article_id}")
+                //            div.delete_icon
+                //                i.iconfont.icon-shanchu.delete_icon2
+                //            div.list-block.media-list
+                //                a(href="../article?article_id=#{article.article_id}")
+                //                    ul: li.a_color
+                //                        div.item-inner
+                //                            div.item-title-row.introduce_title
+                //                                div.item-title=article.name
+                //        div.card-footer.no-border
+                //            span=article.publish_time
+                //            span
+                //                i.iconfont.icon-liulan
+                //                span=article.views
+
+            div#tab3.tab
+                div.card
+                  each feeling in feelings
+                    div.card-content.relative
+                        div.delete_icon
+                            i.iconfont.icon-shanchu.delete_icon3
+                        div.card-content-inner.card_artsworld
+                            div.row
+                                div.col-20
+                                    img.head_img(src=feeling.avatar width="100%")
+                                div.col-80
+                                    div.text
+                                        span=feeling.name
+                                    div.text
+                                        - var date = new Date(feeling.publish_rtime*1000);
+                                        - var m = date.getMonth()+1;
+                                        - m = m < 10 ? ('0' + m) : m
+                                        - var d = date.getDate();
+                                        - d = d < 10 ? ('0' + d) : d;
+                                        - var h = date.getHours();
+                                        - var minute = date.getMinutes();
+                                        - minute = minute < 10 ? ('0' + minute) : minute;
+                                        - var time = m+"-"+d+" "+h+":"+minute;
+                                        span.gray=time
+                                    div.text.dimension
+                                        span.text=feeling.text
+                                    div.img_group
+                                      each picture in feeling.small_pictures
+                                        img.dimension_img(src=picture)
+                                    div.place-icon.margin-top.clearfix
+                                        span.text=feeling.publish_time
+                                        //i.artworld_icon.iconfont.icon-huihuashezhi
+                                        span.fr
+                                            if(feeling.is_like)
+                                                i.islike.artworld_icon.iconfont.red.icon-xihuanfill
+                                            else
+                                                i.islike.artworld_icon.iconfont.red.icon-xihuan
+                                            i.artworld_icon.iconfont.icon-huihuashezhi
+                                            //i.artworld_icon.iconfont.icon-liulan
+                                            //span=feeling.views
+                                    div.comment_area.display_none(feeling_id = "#{feeling.feeling_id}")
+                                        div.comment_display.margin-top
+                                        div.comment_box
+                                            input.comment(type="text" placeholder="点击输入评论内容")
+                                            span.comment_btn="发表评论"
+    div.popup.popup-img
+        div.content-block
+            img#dimension_big_img(src="" width="100%")
+
+
+block footer
+    script(type="text/javascript").
+        //点击图片放大
+        $(".dimension_img").click(function () {
+            $("#dimension_big_img")[0].src = $(this)[0].src;
+            $.popup('.popup-img');
+        });
+        $("#dimension_big_img").click(function () {
+            $.closeModal('.popup-img');
+        });
+        //获取评论
+        document.addEventListener("click",function (e) {
+            if($(e.target).hasClass("comment_dimension")){
+                recomment(e.target);
+            }
+            else if($(e.target).hasClass("icon-huihuashezhi")){
+                var comment_area = $(e.target).parents('.place-icon').next(".comment_area");
+                var feeling_id = comment_area.attr("feeling_id");
+                //判断是否已经有内容，避免重复请求
+                if(!comment_area.find(".comment_display").children().length){
+                    $.ajax({
+                        url: '../artsworld/getcomment',
+                        type: 'POST',
+                        data: {feeling_id: feeling_id},
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                var html = "";
+                                for (var i = 0; i < res.data.length; i++) {
+                                    //直接评论
+                                    if (!res.data[i].is_reply) {
+                                        //直接评论内容
+                                        html += "<div class='comment_content' "+"comment_id="+res.data[i].comment_id+">\
+                                                      <span class='comment_name' author_id="+res.data[i].author_id+">" + res.data[i].author_name + "</span>\
+                                                      <span>:</span>\
+                                                      <span class='comment_dimension no-margin-d'>" + res.data[i].text + "</span>\
+                                                  </div>";
+                                    } else {
+                                        //回复内容
+                                        html += "<div class='comment_content' "+"comment_id="+res.data[i].comment_id+">\
+                                                              <span class='comment_name' author_id="+res.data[i].author_id+">" + res.data[i].author_name + "</span>\
+                                                              <span class='small-text'>回复: </span>\
+                                                              <span class='recomment_name' target_aid="+res.data[i].target_aid+">" + res.data[i].target_aname + "</span>\
+                                                              <span>:</span>\
+                                                              <span class='comment_dimension no-margin-d'>" + res.data[i].text + "</span>\
+                                                          </div>";
+                                    }
+                                }
+                                comment_area.find(".comment_display").append(html);
+                                //console.log("获取评论成功");
+                            }
+                            else {
+                                console.log('获取评论失败');
+                            }
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                }
+                comment_area.slideToggle(400);
+            }
+            //删除心情
+            else if($(e.target).hasClass("delete_icon3")){
+              $.confirm('确定要删除吗?', function () {
+                  var comment_area = $(e.target).parent().siblings().find(".comment_area");
+                  var feeling_id = comment_area.attr("feeling_id");
+                  $.ajax({
+                      url: '../mood/delete',
+                      type: 'POST',
+                      data: {
+                          feeling_id: feeling_id
+                      },
+                      success: function (res) {
+                          console.log(res);
+                          if (res.errno == "0") {
+                              $(e.target).parent().parent().parent().remove();
+                              $.alert("删除成功");
+                          }
+                          else {
+                              console.log('添加关注失败');
+                          }
+                      },
+                      error: function (err) {
+                          console.log(err);
+                      }
+                  });
+              });
+            }
+            //删除文章
+            else if ($(e.target).hasClass("delete_icon2")) {
+                $.confirm('确定要删除吗?', function () {
+                    var article_id = $(e.target).parents(".article_id").attr("article_id");
+                    $.ajax({
+                        url: '../article/delete',
+                        type: 'POST',
+                        data: {
+                            article_id: article_id
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                $(e.target).parent().parent().parent().remove();
+                                $.alert("删除成功");
+                            }
+                            else {
+                                console.log('删除失败');
+                            }
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                });
+            }
+            //删除作品
+            else if ($(e.target).hasClass("delete_icon1")) {
+                $.confirm('确定要删除吗?', function () {
+                    var work_id = $(e.target).parents(".work_id").attr("work_id");
+                    $.ajax({
+                        url: '../work/delete',
+                        type: 'POST',
+                        data: {
+                            work_id: work_id
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                $(e.target).parents(".work_id").remove();
+                                $.alert("删除成功");
+                            }
+                            else {
+                                console.log('删除失败');
+                            }
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    });
+                });
+            }
+        });
+        function recomment(self) {
+            var _this = self;
+            //回复人名称
+            var target_aname = $(self).parent().find(".comment_name").html();
+            var target_aid = $(self).parent().find(".comment_name").attr("author_id");
+            var target_id = $(_this).parents('.comment_area').attr("feeling_id");
+            var target_cid = $(_this).parents('.comment_content').attr("comment_id");
+            $.prompt('请输入回复内容', function (value) {
+                var html = "<div class='comment_content'>\
+                                                           <span class='comment_name'>我</span>\
+                                                           <span class='small-text'>回复</span>\
+                                                           <span class='recomment_name'>" + target_aname + "</span>\
+                                                           <span>:</span>\
+                                                           <span class='comment_dimension no-margin-d'>" + value + "</span>\
+                                                       </div>";
+                if (value != "") {
+                    $(_this).parents('.comment_display').append(html);
+                    $.ajax({
+                        url: '../artsworld/publishcomment',
+                        type: 'POST',
+                        data: {
+                            target_aname: target_aname,
+                            target_id: target_id,
+                            target_aid: target_aid,
+                            target_cid: target_cid,
+                            text: value
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.errno == "0") {
+                                $.alert("回复成功");
+                            }
+                            else {
+                                console.log('回复失败');
+                            }
+                        },
+                        error: function (err) {
+                            console.log(err);
+                        }
+                    })
+                }
+            });
+        }
+        /*function recomment(self) {
+            var _this = self;
+            var buttons1 = [
+                {
+                    text: '回复',
+                    bold: true,
+                    onClick: function () {
+                        //回复人名称
+                        var target_aname = $(self).parent().find(".comment_name").html();
+                        var target_aid = $(self).parent().find(".comment_name").attr("author_id");
+                        var target_id = $(_this).parents('.comment_area').attr("feeling_id");
+                        var target_cid = $(_this).parents('.comment_content').attr("comment_id");
+                        $.prompt('请输入回复内容', function (value) {
+                            var html = "<div class='comment_content'>\
+                                               <span class='comment_name'>我</span>\
+                                               <span class='small-text'>回复</span>\
+                                               <span class='recomment_name'>" + target_aname + "</span>\
+                                               <span>:</span>\
+                                               <span class='comment_dimension no-margin-d'>" + value + "</span>\
+                                           </div>";
+                            if (value != "") {
+                                $(_this).parents('.comment_display').append(html);
+                                $.ajax({
+                                    url: '../artsworld/publishcomment',
+                                    type: 'POST',
+                                    data: {
+                                        target_aname: target_aname,
+                                        target_id: target_id,
+                                        target_aid: target_aid,
+                                        target_cid: target_cid,
+                                        text:value
+                                    },
+                                    success: function (res) {
+                                        console.log(res);
+                                        if (res.errno == "0") {
+                                            $.alert("回复成功");
+                                        }
+                                        else {
+                                            console.log('回复失败');
+                                        }
+                                    },
+                                    error: function (err) {
+                                        console.log(err);
+                                    }
+                                })
+                            }
+                        });
+                    }
+                },
+                {
+                    text: '举报',
+                    bold: true,
+                    color: 'danger',
+                    onClick: function () {
+                        $.alert("你选择了“举报“");
+                    }
+                }
+            ];
+            var buttons2 = [
+                {
+                    text: '取消',
+                    bg: 'danger'
+                }
+            ];
+            var groups = [buttons1, buttons2];
+            $.actions(groups);
+        }*/
+
+        //发表评论
+        $(".comment_btn").on("click",function () {
+            var value = $(this).prev().val();
+            var feeling_id = $(this).parent().parent().attr("feeling_id");
+            console.log(feeling_id);
+            var html = "<div class='comment_content'>\
+                                  <span class='comment_name'>我</span>\
+                                  <span>:</span>\
+                                  <span class='comment_dimension no-margin-d'>" + value + "</span>\
+                           </div>";
+            if(value != ""){
+                $(this).parent().prev().append(html);
+                $(this).prev().val("");
+                $.ajax({
+                    url: '../artsworld/comment',
+                    type: 'POST',
+                    data: {
+                        text: value,
+                        feeling_id: feeling_id
+                    },
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            $.alert("评论成功");
+                        }
+                        else {
+                            console.log('评论失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+        });
+
+        //心情点赞
+        $(".islike").click(function () {
+            var _this = this;
+            var feeling_id = $(_this).parents('.place-icon').next(".comment_area").attr("feeling_id");
+            console.log(feeling_id);
+            if ($(this).hasClass("icon-xihuan")) {
+                //添加点赞
+                $.ajax({
+                    url: './addconcern',
+                    type: 'POST',
+                    data: {text: "添加点赞", feeling_id: feeling_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            console.log('添加关注成功');
+                            $(_this).removeClass("icon-xihuan").addClass("icon-xihuanfill");
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+            else {
+                //取消点赞
+                $.ajax({
+                    url: './addconcern',
+                    type: 'POST',
+                    data: {text: "取消点赞", feeling_id: feeling_id},
+                    success: function (res) {
+                        console.log(res);
+                        if (res.errno == "0") {
+                            console.log('取消关注成功');
+                            $(_this).removeClass("icon-xihuanfill").addClass("icon-xihuan");
+                        }
+                        else {
+                            console.log('添加关注失败');
+                        }
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            }
+        });

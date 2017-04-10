@@ -1,0 +1,55 @@
+div.header
+    div.title.light-blue
+        h3="观照自然后台管理系统"
+        div
+            span.margin-4r="欢迎"
+            a.margin-4r(href="javascript:;")="袁珊"
+            span.margin-4r="访问"
+            a.exit(href="./login")="退出账户"
+    div.list
+        ul
+            li.gray.header-nav.admanage
+                a(href="./admanage")="广告管理"
+            li.gray.header-nav.areamanage
+                a(href="./areamanage")="场地管理"
+            li.gray.header-nav.artmanage
+                a(href="./artmanage")="艺术家管理"
+            li.gray.header-nav.workmanage
+                a(href="./workmanage")="作品管理"
+            li.gray.header-nav.index.active
+                a(href="./index")="活动管理"
+            li.gray.header-nav.vipmanage
+                a(href="./vipmanage")="会员管理"
+            li.gray.header-nav.labelmanage
+                a(href="./labelmanage")="标签管理"
+script(type="text/javascript").
+        console.log(window.location);
+        switch(window.location.pathname.replace('/admin/', '')){
+            case 'index':
+                $('.index').addClass('active').siblings().removeClass('active');
+                break;
+            case 'admanage':
+                $('.admanage').addClass('active').siblings().removeClass('active');
+                break;
+            case 'areamanage':
+                $('.areamanage').addClass('active').siblings().removeClass('active');
+                break;
+            case 'artmanage':
+                $('.artmanage').addClass('active').siblings().removeClass('active');
+                break;
+            case 'workmanage':
+                $('.workmanage').addClass('active').siblings().removeClass('active');
+                break;
+            case 'actmanage':
+                $('.actmanage').addClass('active').siblings().removeClass('active');
+                break;
+            case 'vipmanage':
+                $('.vipmanage').addClass('active').siblings().removeClass('active');
+                break;
+            case 'labelmanage':
+                $('.labelmanage').addClass('active').siblings().removeClass('active');
+                break;
+        }
+        $('.header-nav').click(function(){
+            $(this).addClass('active').siblings().removeClass('active');
+        })

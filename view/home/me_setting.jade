@@ -1,0 +1,150 @@
+extends layout
+block head
+    script(type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js")
+
+block content
+    div.content
+        div.card: div.card-content: div.list-block: ul
+            li: a(href="javascript:;").item-link.item-content#change_head
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner.setting_head
+                    div.item.text-left: span="头像"
+                    img.right.head_img(src=info.avatar width="55px" height="55px")
+            li: a(href="javascript:;").item-link.item-content#change_name
+                div.class-media: i.iconfont.icon-xingxing
+                div.item-inner
+                    div.text-left: span="昵称"
+                    .right.nicename=info.name
+block footer
+    script(type="text/javascript").
+        $('#change_name').click(function () {
+            $('.modal-text-input').attr("maxlength", '10');
+            $.prompt('请输入新昵称', function (value) {
+                $('.modal-text-input').attr("maxlength", '10');
+                $.alert('您的新昵称修改为 ' + value + '？', function () {
+                    $('.nicename').text(value);
+                    $.ajax({
+                        url: "./editself",
+                        type: "POST",
+                        data: {name: value},
+                        success: function (res) {
+                            console.log(res);
+                        },
+                        error: function (res) {
+                            $.alert('修改昵称失败');
+                        }
+                    })
+                });
+            });
+        });
+
+        if (!{signFlag}) {
+            //判断是否在微信端
+            $(document).ready(function () {
+                var url = location.href.split('#')[0];
+                //进行encodeURIComponent
+                url = encodeURIComponent(url);
+                $.ajax({
+                    url: './sign',
+                    method: "POST",
+                    contentType: "application/json",
+                    data: {url: url},
+                    success: function (res) {
+                        var sign_data = res.data;
+                        sign(sign_data);
+                    },
+                    error: function (err) {
+                        if (isAndroid && err.status == 0) {
+                            var sign_data = err.data;
+                            sign(sign_data);
+                        }
+                        console.log(err);
+                    }
+                });
+            });
+
+            function sign(data) {
+                wx.config({
+                    debug: false,
+                    appId: data.appid,
+                    timestamp: data.timestamp,
+                    nonceStr: data.nonceStr,
+                    signature: data.signature,
+                    jsApiList: ['getLocation', 'chooseImage', 'previewImage', 'uploadImage']
+                });
+
+                //验证成功
+                wx.ready(function () {
+                    wx.getLocation({
+                        type: 'wgs84', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+                        success: function (res) {
+                            //$.alert(res);
+                            console.log(res);
+                            var latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                            var longitude = res.longitude; // 经度，浮点数，范围为180 ~ -180。
+                            var speed = res.speed; // 速度，以米/每秒计
+                            var accuracy = res.accuracy; // 位置精度
+                        },
+                        fail: function (res) {
+                            $.alert('获取地理位置失败');
+                        }
+                    });
+                });
+                //验证失败
+                wx.error(function (res) {
+                    //alert(JSON.stringify(data));
+                });
+
+            }
+        }
+
+        // 5.1 拍照、本地选图
+        var images = {
+            localId: [],
+            serverId: []
+        };
+        var avatar;
+        document.querySelector('#change_head').onclick = function () {
+            wx.chooseImage({
+                count: 1, // 默认9
+                success: function (res) {
+                    images.localId = res.localIds;
+                    avatar = res.localIds;
+                    //$('.head_img').attr('src', avatar);
+                    var i = 0, length = images.localId.length;
+                    images.serverId = [];
+                    function upload() {
+                        wx.uploadImage({
+                            localId: images.localId[i],
+                            isShowProgressTips: 1, // 默认为1，显示进度提示
+                            success: function (res) {
+                                i++;
+                                //images.serverId.push(res.serverId);
+                                var data = {sid: res.serverId};
+                                //alert("[serverId]:" + data.sid);
+                                //if (i < length) {
+                                //    upload();
+                                //}
+
+                                $.ajax({
+                                    url: './download',
+                                    type: 'POST',
+                                    data: data,
+                                    success: function (res) {
+                                        alert('头像上传成功');
+                                    },
+                                    error: function (res) {
+                                        alert('头像修改失败' + res.reason);
+                                    }
+                                })
+                            },
+                            fail: function (res) {
+                                //alert(JSON.stringify(res));
+                            }
+                        });
+                    }
+
+                    upload();
+                }
+            });
+        };

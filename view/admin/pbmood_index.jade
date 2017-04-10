@@ -1,0 +1,117 @@
+extends ./common/sidebar
+block head
+block main
+    .publish_title
+        .buttons-tab.buttons_tab
+            a#show_tab1.btn.btn-default(href="#{root_path}/admin/operation/publish")="发布作品"
+            a#show_tab2.btn.btn-default(href="#{root_path}/admin/pbarticle")="发布文章"
+            a#show_tab3.btn.btn-primary(href="#{root_path}/admin/pbmood")="发布心情"
+        .button_right
+            button.issue.btn.btn-success="发布"
+    div.tabs_box
+        .tabs
+            #tab3.tab
+                .tab_content
+                    .mood_contnt
+                        textarea.mood_textarea#mood_textarea(maxlength="140" placeholder="说点什么...")
+                        .mood_pic_add
+                            .mood_add_btn
+                                i.iconfont.icon-zhaoxiangji
+                                form.uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100px; z-index:99;")
+                                    input.filechooser(type="file" name="mood_img" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+                        .mood_pic_con
+
+
+block footer
+    script(type="text/javascript").
+        $(function () {
+            //上传图片
+            $(".filechooser").on('change', function () {
+                var file = this.files[0];
+                // 接受 jpeg, jpg, png 类型的图片
+                if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+                if (Math.ceil(file.size / 1024 / 1024) > 5) {
+                    console.error('文件太大');
+                    return;
+                }
+                doUpload();//上传图片
+            });
+            function doUpload() {
+                var formData = new FormData($(".uploadimg")[0]);
+                $.ajax({
+                    url: "./pbmood/upload",
+                    type: 'POST',
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        console.log(res);
+                        //返回图片url
+                        if (res.errno !== 0) {
+                            console.log('上传文件出错');
+                            return
+                        }
+                        var html = "<div class='mood_pic'>\
+                                        <img src=" + res.data + ">\
+                                        <i class='issue_cancel icon iconfont icon-reduce'></i>\
+                                    </div>";
+                        var item = $(html);
+                        // 绑定删除行为
+                        item.find("i").click(deleteImg);
+                        $(".mood_pic_con").append(item);
+
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            }
+
+            function deleteImg() {
+                $(this).parents('.mood_pic').remove();
+                var src = $(this).prev('img').attr('src');
+                console.log(src);
+                $.ajax({
+                    url: './pbmood/remove',
+                    type: 'POST',
+                    data: {src: src},
+                    success: function (res) {
+                        console.log(res)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+
+            }
+
+            //发布心情
+            $('.issue').on('click',function () {
+                var text = $('#mood_textarea').val();
+                console.log(text);
+                $.ajax({
+                    url: './pbmood/publish',
+                    type: 'POST',
+                    data: {text: text},
+                    success: function (res) {
+                        if (res.errno == "0") {
+                            alert("发布成功");
+                                window.location.href = "#{root_path}/admin/pbmood"
+                            }
+                        else {
+                            console.log('发布失败');
+                        }
+                    },
+                    error: function (err) {
+                        alert("发布失败");
+                        console.log(err);
+                    }
+                })
+            });
+
+
+
+
+
+        });

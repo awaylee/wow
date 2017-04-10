@@ -1,0 +1,129 @@
+//
+   Created by liwei on 2016/12/23.
+extends layout
+
+block head
+    link(rel="stylesheet", href="#{root_path}/static/css/mobile/issue.css")
+
+block content
+    header.bar.bar-nav
+        button.posi_left.color-gray(onclick="self.location=document.referrer;")="取消"
+        h1.title="发布心情"
+        button.posi_right.color-gray#introduce(disabled="true")="发布"
+
+    .content
+        .card
+            .margin_2
+                textarea.mood_textarea#mood_textarea(maxlength="140" placeholder="说点什么...")
+                .mood_pic_item.row
+                    .mood_pic_add.mood_pic.col-33
+                        i.iconfont.icon-jiaxuxian
+                        form#uploadimg(enctype="multipart/form-data" style="position:absolute;top:0;left:0;opacity:0;width:100%; height:100px; z-index:99;")
+                            input#filechooser(type="file" name="mood_img" capture="camera" accept="image/*" style="position:absolute;top:0;left:0;height:100%; width:100%;")
+                .mood_pic_con.row
+block footer
+    script(type="text/javascript").
+        $("#filechooser").on('change', function () {
+            var file = this.files[0];
+            // 接受 jpeg, jpg, png 类型的图片
+            if (!/\/(?:jpeg|jpg|png)/i.test(file.type)) return;
+            if (Math.ceil(file.size / 1024 / 1024) > 5) {
+                console.error('文件太大');
+                return;
+            }
+            doUpload();//上传图片
+        });
+        //判断用户输入情况
+        $("#mood_textarea").on("input",function () {
+            var length = $(this).val().length;
+            if (!length) $("#introduce").removeClass("useable");
+            else {
+                $("#introduce").addClass("useable").removeAttr('disabled').removeClass('color-gray');
+            }
+        });
+
+        //判断发布或者取消的执行情况
+        $("#introduce").on("click", function () {
+            if($(this).hasClass("color-gray")){
+                $.alert("请输入内容");
+            }
+            else{
+                console.log("可以发布");
+                var text = $("#mood_textarea").val();
+                $.showPreloader('发布中...');
+                $.ajax({
+                    url: './publish',
+                    type: 'POST',
+                    data: {text: text},
+                    success: function (res) {
+                        $.hidePreloader();
+                        if (res.errno == "0") {
+                            $.alert("发布成功",function () {
+                                window.location.href="#{root_path}/home/me/introduce"
+                            });
+                        }
+                        else {
+                            console.log('发布失败');
+                        }
+                    },
+                    error: function (err) {
+                        $.alert("发布失败");
+                        console.log(err);
+                    }
+                })
+            }
+        });
+
+        function doUpload() {
+            var formData = new FormData($("#uploadimg")[0]);
+            $.showPreloader('上传中...');
+            $.ajax({
+                url: "./upload",
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (res) {
+                    console.log(res);
+                    //返回图片url
+                    if (res.errno !== 0) {
+                        console.log('上传文件出错');
+                        return
+                    }
+                    var html = "<div class='mood_pic col-33'>\
+                                    <div class='issue_pic'>\
+                                        <img src="+res.data+">\
+                                        <span class='issue_cancel icon iconfont icon-reduce'></span>\
+                                    </div> \
+                                </div>";
+                    var item = $(html);
+                    $.hidePreloader();
+                    //删除照片
+                    item.find("span").click(deleteImg);
+                    $(".mood_pic_con").append(item);
+                    $("#introduce").addClass("useable").removeAttr('disabled').removeClass('color-gray');
+                },
+                error: function (err) {
+                    console.log(err);
+                    $.alert('图片上传失败');
+                }
+            });
+        }
+
+        function deleteImg() {
+            $(this).parents('.col-33').remove();
+            var src = $(this).prev('img').attr('src');
+            console.log(src);
+            $.ajax({
+                url: './remove',
+                type: 'POST',
+                data: {src: src},
+                success: function (res) {
+                    console.log(res)
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }
